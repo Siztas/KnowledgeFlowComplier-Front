@@ -49,15 +49,20 @@ const Sidebar = () => {
       >
         {/* 左侧书架区域 - 固定宽度 */}
         <Flex 
+          
           direction="column" 
           width="280px" 
+          minWidth="280px"
           flexShrink={0} // 防止收缩
+          flexBasis="280px" // 确保基础尺寸也是固定的
+          borderRight={isExpanded ? "1px solid" : "none"}
+          borderColor="whiteAlpha.200"
         >
           <Heading size="md" color="white" mb={6}>我的书架</Heading>
           
           {/* 书架区域 */}
-          <Box flex="1 1 auto" overflow="auto">
-            <ShelfDroppable isExpanded={isExpanded} />
+          <Box flex="1 1 auto" overflow="center" width="100%">
+            <ShelfDroppable />
           </Box>
         </Flex>
         
@@ -84,7 +89,7 @@ const Sidebar = () => {
       {/* 半圆形展开按钮 - 确保可见，放在容器外部 */}
       <MotionBox
         position="absolute"
-        right="-25px"
+        right="-15px"
         top="50%"
         transform="translateY(-50%)"
         width="50px"

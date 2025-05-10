@@ -8,11 +8,7 @@ import { motion } from "framer-motion";
 
 const MotionBox = motion(Box);
 
-interface ShelfDroppableProps {
-  isExpanded?: boolean;
-}
-
-const ShelfDroppable = ({ isExpanded = false }: ShelfDroppableProps) => {
+const ShelfDroppable = () => {
   const savedArticles = useArticleStore((state) => state.savedArticles);
   
   // 设置可放置区域
@@ -24,22 +20,24 @@ const ShelfDroppable = ({ isExpanded = false }: ShelfDroppableProps) => {
   });
 
   return (
-    <Box h="100%">
+    <Box h="100%" display="flex" justifyContent="center">
       {/* 拖放区域 */}
       <MotionBox
         ref={setNodeRef}
         minH={savedArticles.length === 0 ? "200px" : "auto"}
-        maxH={isExpanded ? "300px" : "none"}
-        overflowY={isExpanded ? "auto" : "visible"}
+        maxH="calc(100vh - 200px)" // 固定最大高度
+        overflowY="auto"
         display="flex"
         flexDirection="column"
         borderRadius="md"
         p={4}
+        width="260px" // 固定宽度，无论侧栏是否展开
+        flexShrink={0} // 防止收缩
         animate={{
           borderColor: isOver ? 'rgb(33, 150, 243)' : 'rgba(255, 255, 255, 0.2)',
           borderWidth: isOver ? '3px' : '2px',
           backgroundColor: isOver ? 'rgba(33, 150, 243, 0.1)' : 'transparent',
-          scale: isOver ? 1.02 : 1
+          scale: isOver ? 1.02 : 1,
         }}
         transition={{
           type: "spring",
@@ -71,7 +69,7 @@ const ShelfDroppable = ({ isExpanded = false }: ShelfDroppableProps) => {
           </Box>
         ) : (
           <Grid 
-            templateColumns={isExpanded ? "repeat(auto-fill, minmax(200px, 1fr))" : "1fr"} 
+            templateColumns="1fr" // 始终保持单列布局
             gap={4}
           >
             {savedArticles.map(article => (

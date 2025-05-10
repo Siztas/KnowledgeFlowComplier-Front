@@ -14,7 +14,7 @@ export default function Home() {
       <Flex h="100vh" overflow="hidden" position="relative" p={2}>
         {/* 左侧书架侧栏 */}
         <Box 
-          w="300px" 
+          w="320px" 
           h="100%" 
           bg="sidebar.bg" 
           boxShadow="dark-lg"
