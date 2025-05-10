@@ -34,8 +34,15 @@ const variants = {
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
 
-const MainContent = () => {
+// 定义组件props
+interface MainContentProps {
+  showSearchResults?: boolean;
+}
+
+const MainContent = ({ showSearchResults = false }: MainContentProps) => {
   const articles = useArticleStore((state) => state.articles);
+  const searchResults = useArticleStore((state) => state.searchResults);
+  const searchQuery = useArticleStore((state) => state.searchQuery);
   const selectedArticle = useArticleStore((state) => state.selectedArticle);
   const setSelectedArticle = useArticleStore((state) => state.setSelectedArticle);
   const addToShelf = useArticleStore((state) => state.addToShelf);
@@ -49,6 +56,9 @@ const MainContent = () => {
   
   // 用于检测点击事件的引用
   const contentRef = useRef<HTMLDivElement>(null);
+  
+  // 确定要显示的文章列表
+  const displayedArticles = showSearchResults ? searchResults : articles;
   
   const handleClose = () => {
     setSelectedArticle(null);
@@ -91,22 +101,52 @@ const MainContent = () => {
 
   return (
     <Box p={2}>
+      {/* 搜索结果提示 */}
+      {showSearchResults && (
+        <MotionFlex
+          justify="space-between"
+          align="center"
+          mb={4}
+          px={4}
+          py={3}
+          bg="#1a1a1a"
+          borderRadius="md"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Text color="white">
+            {searchResults.length > 0 
+              ? `搜索"${searchQuery}"，找到 ${searchResults.length} 条结果` 
+              : `未找到与"${searchQuery}"相关的文章`
+            }
+          </Text>
+        </MotionFlex>
+      )}
+      
       {/* 文章卡片网格 - 5列布局 */}
       <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5 }} gap={4} position="relative" zIndex="1">
-        {articles.map((article) => (
-          <MotionBox 
-            key={article.id} 
-            layoutId={`article-card-${article.id}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ 
-              duration: 0.3,
-              ease: "easeOut"
-            }}
-          >
-            <DraggableArticleCard article={article} />
-          </MotionBox>
-        ))}
+        {displayedArticles.length > 0 ? (
+          displayedArticles.map((article) => (
+            <MotionBox 
+              key={article.id} 
+              layoutId={`article-card-${article.id}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ 
+                duration: 0.3,
+                ease: "easeOut"
+              }}
+            >
+              <DraggableArticleCard article={article} />
+            </MotionBox>
+          ))
+        ) : showSearchResults ? (
+          <Box gridColumn="span 5" p={8} textAlign="center" color="whiteAlpha.700">
+            <Heading size="md">未找到相关文章</Heading>
+            <Text mt={4}>请尝试其他关键词搜索</Text>
+          </Box>
+        ) : null}
       </SimpleGrid>
 
       {/* 文章全文显示 - 模态对话框形式 - 移到最后确保在最上层 */}

@@ -36,6 +36,18 @@ const sampleArticles: Article[] = [
     imageUrl: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=1000",
     content: "量子计算与机器学习的结合开创了量子机器学习这一新兴领域。本文讨论了量子机器学习算法的理论基础、潜在优势以及当前的实验进展。"
   },
+  {
+    id: "6",
+    title: "计算机视觉中的自监督学习",
+    imageUrl: "https://images.unsplash.com/photo-1554595666-19ceabf46a84?q=80&w=1000",
+    content: "自监督学习通过设计代理任务，使模型能够从未标记的数据中学习有用的表示。本文介绍了计算机视觉领域自监督学习的最新方法和突破。"
+  },
+  {
+    id: "7",
+    title: "大规模语言模型的伦理考量",
+    imageUrl: "https://images.unsplash.com/photo-1604676453779-3991db910c8c?q=80&w=1000",
+    content: "随着GPT等大规模语言模型的广泛应用，其伦理问题日益突出。本文讨论了这些模型在公平性、偏见、隐私和安全等方面的挑战和可能的解决方案。"
+  },
 ];
 
 // 文章状态接口
@@ -43,10 +55,20 @@ interface ArticleState {
   articles: Article[];
   savedArticles: SavedArticle[];
   selectedArticle: Article | null;
+  searchQuery: string;
+  isSearching: boolean;
+  searchResults: Article[];
+  
   setSelectedArticle: (article: Article | null) => void;
   addToShelf: (article: Article) => void;
   removeFromShelf: (id: string) => void;
   isArticleInShelf: (id: string) => boolean;
+  
+  // 搜索相关方法
+  setSearchQuery: (query: string) => void;
+  clearSearch: () => void;
+  searchArticles: (query: string) => void;
+  refreshArticles: () => void;
 }
 
 // 创建文章状态存储
@@ -56,6 +78,9 @@ export const useArticleStore = create<ArticleState>()(
       articles: sampleArticles,
       savedArticles: [],
       selectedArticle: null,
+      searchQuery: "",
+      isSearching: false,
+      searchResults: [],
       
       setSelectedArticle: (article) => set({ selectedArticle: article }),
       
@@ -80,6 +105,39 @@ export const useArticleStore = create<ArticleState>()(
       isArticleInShelf: (id) => {
         const { savedArticles } = get();
         return savedArticles.some(article => article.id === id);
+      },
+      
+      // 设置搜索查询
+      setSearchQuery: (query) => set({ searchQuery: query }),
+      
+      // 清除搜索
+      clearSearch: () => set({ 
+        searchQuery: "", 
+        isSearching: false, 
+        searchResults: [] 
+      }),
+      
+      // 执行搜索
+      searchArticles: (query) => {
+        const { articles } = get();
+        set({ isSearching: true, searchQuery: query });
+        
+        // 简单的客户端搜索实现，实际情况可能需要API调用
+        const results = articles.filter(article => 
+          article.title.toLowerCase().includes(query.toLowerCase()) || 
+          article.content.toLowerCase().includes(query.toLowerCase())
+        );
+        
+        set({ searchResults: results, isSearching: false });
+      },
+      
+      // 刷新文章
+      refreshArticles: () => {
+        // 在实际应用中，这里会从API获取新的文章
+        // 目前只是模拟刷新效果，随机排序文章
+        const { articles } = get();
+        const shuffledArticles = [...articles].sort(() => Math.random() - 0.5);
+        set({ articles: shuffledArticles });
       }
     }),
     {
