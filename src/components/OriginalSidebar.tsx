@@ -65,7 +65,7 @@ const OriginalSidebar = () => {
       }}
     >
       {/* 顶部导航按钮 */}
-      <VStack spacing={6} align="flex-start" mt={6} width="90%" maxW="240px">
+      <VStack spacing={6} align="flex-start" mt={6} width="100%" maxW="240px">
         {/* <Text fontSize="lg" fontWeight="bold" mb={2} color="white" textAlign="center">
           导航菜单
         </Text> */}
@@ -130,7 +130,7 @@ const OriginalSidebar = () => {
       </VStack>
       
       {/* 底部设置按钮 */}
-      <Box width="90%" maxW="240px" mb={4} alignSelf="flex-start">
+      <Box width="100%" maxW="240px" mb={4} alignSelf="flex-start">
         <MotionFlex
           align="center"
           cursor="pointer"

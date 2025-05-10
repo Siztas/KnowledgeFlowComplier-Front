@@ -1,39 +1,54 @@
 "use client";
 
 import { Box, Heading, Flex, useTheme, Text } from "@chakra-ui/react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 import { ChevronRightIcon } from "@chakra-ui/icons";
 import ShelfDroppable from "./ShelfDroppable";
 import RagQueryUI from "./RagQueryUI";
 import { useSidebarStore, SidebarType } from "@/store/sidebarStore";
 import OriginalSidebar from "./OriginalSidebar";
+import { useState, useEffect } from "react";
 
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
 
-// 侧栏内容动画变体 - 改为上下拉动效果
+// 侧栏内容动画变体 - 改为上下翻动卡片效果
 const sidebarContentVariants = {
   enter: (direction: number) => ({
-    y: direction > 0 ? 100 : -100,
+    y: direction > 0 ? '100%' : '-100%',
     opacity: 0,
-    scale: 0.9,
+    rotateX: direction > 0 ? 45 : -45, // 添加X轴旋转角度
+    transformOrigin: direction > 0 ? 'top' : 'bottom', // 根据方向设置变换原点
+    perspective: 1200, // 增加3D视角感
+    scale: 0.8,
+    zIndex: 0
   }),
   center: {
     y: 0,
     opacity: 1,
+    rotateX: 0,
     scale: 1,
+    zIndex: 1,
     transition: {
-      duration: 0.4,
-      ease: [0.25, 0.1, 0.25, 1.0],
+      y: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1.0] },
+      opacity: { duration: 0.3, ease: "easeInOut" },
+      rotateX: { duration: 0.4, ease: "easeOut" },
+      scale: { duration: 0.4, ease: "easeOut" }
     },
   },
   exit: (direction: number) => ({
-    y: direction < 0 ? 100 : -100,
+    y: direction < 0 ? '100%' : '-100%',
     opacity: 0,
-    scale: 0.9,
+    rotateX: direction < 0 ? 45 : -45, // 添加X轴旋转角度
+    transformOrigin: direction < 0 ? 'top' : 'bottom', // 根据方向设置变换原点
+    perspective: 1200, // 增加3D视角感
+    scale: 0.8,
+    zIndex: 0,
     transition: {
-      duration: 0.3,
-      ease: [0.25, 0.1, 0.25, 1.0],
+      y: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1.0] },
+      opacity: { duration: 0.2, ease: "easeInOut" },
+      rotateX: { duration: 0.4, ease: "easeIn" },
+      scale: { duration: 0.3, ease: "easeIn" }
     },
   }),
 };
@@ -135,6 +150,15 @@ const SettingsContent = () => {
 const getDirection = (current: SidebarType, previous: SidebarType | null): number => {
   if (!previous || previous === 'original') return 1;
   if (current === 'original') return -1;
+  
+  // 添加更多方向判断逻辑，使不同菜单项之间有不同的动画方向
+  const sidebarOrder = ['original', 'bookshelf', 'favorites', 'trending', 'settings'];
+  const currentIndex = sidebarOrder.indexOf(current);
+  const previousIndex = previous ? sidebarOrder.indexOf(previous) : -1;
+  
+  if (currentIndex > previousIndex) return 1; // 向下翻动
+  if (currentIndex < previousIndex) return -1; // 向上翻动
+  
   return 0;
 };
 
@@ -221,10 +245,27 @@ const getExpandedContent = (sidebarType: SidebarType) => {
 const Sidebar = () => {
   const { isExpanded, toggleExpand, activeSidebar } = useSidebarStore();
   const theme = useTheme();
+  const [prevSidebar, setPrevSidebar] = useState<SidebarType | null>(null);
   
   // 从主题中获取颜色代码
   const sidebarColor = "#121212"; // sidebar.bg的颜色代码
   const sidebarHoverColor = "#1a1a1a"; // sidebar.hover的颜色代码
+  
+  // 跟踪侧栏状态变化以确定方向
+  useEffect(() => {
+    setPrevSidebar((prev) => {
+      if (prev !== activeSidebar) {
+        return prev;
+      }
+      return null;
+    });
+    
+    const timer = setTimeout(() => {
+      setPrevSidebar(activeSidebar);
+    }, 500); // 延迟设置，以确保动画完成
+    
+    return () => clearTimeout(timer);
+  }, [activeSidebar]);
 
   return (
     <Box position="relative" h="100%" zIndex="100">
@@ -265,12 +306,13 @@ const Sidebar = () => {
           overflow="hidden" // 确保动画不会溢出
           pb={2} // 添加底部内边距
           px={0} // 移除水平内边距
+          style={{ perspective: '1200px', WebkitPerspective: '1200px' }} // 添加3D视角
         >
           {/* 使用AnimatePresence和动态key实现侧栏切换动画 */}
-          <AnimatePresence initial={false} mode="wait" custom={getDirection(activeSidebar, null)}>
+          <AnimatePresence initial={false} mode="sync" custom={getDirection(activeSidebar, prevSidebar)}>
             <MotionFlex
               key={activeSidebar}
-              custom={getDirection(activeSidebar, null)}
+              custom={getDirection(activeSidebar, prevSidebar)}
               variants={sidebarContentVariants}
               initial="enter"
               animate="center"
@@ -281,6 +323,15 @@ const Sidebar = () => {
               align="center"
               justify="flex-start"
               px={0} // 移除水平内边距
+              style={{ 
+                transformStyle: 'preserve-3d', // 保持3D效果
+                WebkitTransformStyle: 'preserve-3d', // 添加webkit前缀
+                backfaceVisibility: 'hidden',  // 隐藏背面
+                WebkitBackfaceVisibility: 'hidden', // 添加webkit前缀
+                position: 'absolute',          // 绝对定位以叠加动画
+                willChange: 'transform',        // 提示浏览器将使用硬件加速
+                boxShadow: '0 10px 30px rgba(0,0,0,0.3)'  // 添加阴影增强3D效果
+              }}
             >
               {activeSidebar === 'original' && <OriginalSidebar />}
               {activeSidebar === 'bookshelf' && <BookshelfContent />}

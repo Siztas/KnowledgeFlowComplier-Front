@@ -189,7 +189,7 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
               display: 'none'
             },
             scrollbarWidth: 'none',
-            '-ms-overflow-style': 'none',
+            msOverflowStyle: 'none',
           }}
         >
           {displayedArticles.length > 0 ? (

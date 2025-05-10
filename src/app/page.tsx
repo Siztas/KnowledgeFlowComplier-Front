@@ -5,12 +5,13 @@ import dynamic from 'next/dynamic';
 import DndProvider from '@/components/DndProvider';
 import { useArticleStore } from '@/store/articleStore';
 import Logo from '@/components/Logo';
-import SearchBar from '@/components/SearchBar';
+// import SearchBar from '@/components/SearchBar';
 
 // 使用动态导入，禁用SSR
 const Sidebar = dynamic(() => import('@/components/Sidebar'), { ssr: false });
 const MainContent = dynamic(() => import('@/components/MainContent'), { ssr: false });
 const FloatingNav = dynamic(() => import('@/components/FloatingNav'), { ssr: false });
+const SearchBar = dynamic(() => import('@/components/SearchBar'), { ssr: false });
 
 export default function Home() {
   // 获取文章状态
@@ -29,9 +30,9 @@ export default function Home() {
   
   return (
     <DndProvider>
-      <Box position="relative" h="100vh" overflow="hidden">
+      <Box position="relative" h="100vh" overflow="hidden" suppressHydrationWarning>
         {/* 主容器 - 添加水平方向的5%边距 */}
-        <Container maxW="90%" mx="auto" h="100%" p={0}>
+        <Container maxW="90%" mx="auto" h="100%" p={0} suppressHydrationWarning>
           {/* 顶部导航区域 */}
           <Flex 
             position="absolute" 
@@ -43,12 +44,13 @@ export default function Home() {
             align="center"
             justify="space-between"
             width="90%"
+            suppressHydrationWarning
           >
             {/* Logo（左上角） */}
             <Logo />
             
             {/* 搜索栏 */}
-            <Box width="60%" maxW="600px" mx={4}>
+            <Box width="100%" maxW="600px" mx={4} suppressHydrationWarning>
               <SearchBar 
                 onSearch={handleSearch} 
                 onClear={clearSearch} 
@@ -98,7 +100,7 @@ export default function Home() {
                   display: 'none'
                 },
                 scrollbarWidth: 'none',
-                '-ms-overflow-style': 'none',
+                msOverflowStyle: 'none',
               }}
             >
               {/* 文章内容 */}

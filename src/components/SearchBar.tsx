@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback, KeyboardEvent, useEffect, useRef } from "react";
-import { Box, Input, InputGroup, InputRightElement, IconButton, Flex, List, ListItem, Text } from "@chakra-ui/react";
+import { useState, useCallback, KeyboardEvent, useEffect, useRef, InputHTMLAttributes, ForwardedRef, forwardRef } from "react";
+import { Box, Input, InputGroup, InputRightElement, IconButton, Flex, List, ListItem, Text, InputProps } from "@chakra-ui/react";
 import { SearchIcon, CloseIcon, TimeIcon } from "@chakra-ui/icons";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -15,6 +15,17 @@ interface SearchBarProps {
   onClear: () => void;
   isSearching: boolean;
 }
+
+// 创建一个包裹Input的组件来防止水合错误
+const HydrationSafeInput = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
+  return (
+    <Box suppressHydrationWarning>
+      <Input {...props} ref={ref} />
+    </Box>
+  );
+});
+
+HydrationSafeInput.displayName = 'HydrationSafeInput';
 
 const SearchBar = ({ onSearch, onClear, isSearching }: SearchBarProps) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -110,9 +121,10 @@ const SearchBar = ({ onSearch, onClear, isSearching }: SearchBarProps) => {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
+      suppressHydrationWarning
     >
-      <InputGroup size="md">
-        <Input
+      <InputGroup size="md" suppressHydrationWarning>
+        <HydrationSafeInput
           ref={inputRef}
           placeholder="搜索文章..."
           value={searchQuery}
@@ -132,13 +144,16 @@ const SearchBar = ({ onSearch, onClear, isSearching }: SearchBarProps) => {
             }
           }}
           onBlur={() => setIsFocused(false)}
-          pr="4.5rem"
+          pr="22rem"
           height="40px"
+          spellCheck="false"
+          data-ms-editor="true"
+          suppressHydrationWarning
         />
         
         {/* 清除按钮 */}
         {searchQuery && (
-          <InputRightElement right="2.5rem" h="full">
+          <InputRightElement right="2.5rem" h="full" suppressHydrationWarning>
             <IconButton
               aria-label="清除搜索"
               icon={<CloseIcon boxSize={3} />}
@@ -148,12 +163,13 @@ const SearchBar = ({ onSearch, onClear, isSearching }: SearchBarProps) => {
               onClick={handleClear}
               _hover={{ bg: "whiteAlpha.200" }}
               _active={{ bg: "whiteAlpha.300" }}
+              suppressHydrationWarning
             />
           </InputRightElement>
         )}
         
         {/* 搜索按钮 */}
-        <InputRightElement right="0" h="full">
+        <InputRightElement right="0" h="full" suppressHydrationWarning>
           <IconButton
             aria-label="搜索"
             icon={<SearchIcon />}
@@ -164,6 +180,7 @@ const SearchBar = ({ onSearch, onClear, isSearching }: SearchBarProps) => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             as={motion.button}
+            suppressHydrationWarning
           />
         </InputRightElement>
       </InputGroup>
@@ -186,8 +203,9 @@ const SearchBar = ({ onSearch, onClear, isSearching }: SearchBarProps) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
+            suppressHydrationWarning
           >
-            <MotionList spacing={0}>
+            <MotionList spacing={0} suppressHydrationWarning>
               {searchHistory.map((query, index) => (
                 <MotionListItem
                   key={index}

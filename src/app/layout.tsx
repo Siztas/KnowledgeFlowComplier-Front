@@ -30,13 +30,32 @@ export default function RootLayout({
           {`
             (function() {
               try {
+                // 移除可能导致水合错误的通用属性
                 document.documentElement.removeAttribute('data-theme');
                 document.documentElement.style = '';
                 
                 // 预先设置暗色主题
                 document.documentElement.classList.add('dark-theme');
                 document.body.classList.add('dark-theme');
-              } catch(e) {}
+                
+                // 处理可能导致水合错误的输入框特定属性
+                document.addEventListener('DOMContentLoaded', function() {
+                  // 移除Microsoft Editor和spellcheck属性
+                  setTimeout(function() {
+                    const inputs = document.querySelectorAll('input');
+                    inputs.forEach(function(input) {
+                      if (input.hasAttribute('data-ms-editor')) {
+                        input.removeAttribute('data-ms-editor');
+                      }
+                      if (input.hasAttribute('spellcheck')) {
+                        input.removeAttribute('spellcheck');
+                      }
+                    });
+                  }, 0);
+                });
+              } catch(e) {
+                console.error('Hydration fix script error:', e);
+              }
             })();
           `}
         </Script>
@@ -45,6 +64,36 @@ export default function RootLayout({
         <Providers>
           {children}
         </Providers>
+        
+        {/* 清理脚本，处理React水合完成后残留的属性 */}
+        <Script id="post-hydration-cleanup" strategy="afterInteractive">
+          {`
+            (function() {
+              try {
+                // 尝试移除可能导致水合错误的特定属性
+                const cleanup = function() {
+                  const inputs = document.querySelectorAll('input');
+                  inputs.forEach(function(input) {
+                    if (input.hasAttribute('data-ms-editor')) {
+                      input.removeAttribute('data-ms-editor');
+                    }
+                    if (input.hasAttribute('spellcheck')) {
+                      input.removeAttribute('spellcheck');
+                    }
+                  });
+                };
+                
+                // 立即执行一次
+                cleanup();
+                
+                // 并在短暂延迟后再次尝试清理
+                setTimeout(cleanup, 100);
+              } catch(e) {
+                console.error('Post-hydration cleanup error:', e);
+              }
+            })();
+          `}
+        </Script>
       </body>
     </html>
   );
