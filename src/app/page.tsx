@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Flex } from "@chakra-ui/react";
+import { Box, Flex, Container } from "@chakra-ui/react";
 import dynamic from 'next/dynamic';
 import DndProvider from '@/components/DndProvider';
 import { useArticleStore } from '@/store/articleStore';
@@ -29,16 +29,38 @@ export default function Home() {
   
   return (
     <DndProvider>
-      <Box position="relative" h="100vh" overflow="hidden">
-        {/* Logo（左上角） */}
-        <Box position="absolute" top={0} left={0} zIndex={150}>
+      <Box position="relative" h="100vh" overflow="hidden" px={4}>
+        {/* 顶部导航区域 */}
+        <Flex 
+          position="absolute" 
+          top={0} 
+          left={0} 
+          right={0}
+          zIndex={150}
+          p={4}
+          align="center"
+          justify="space-between"
+        >
+          {/* Logo（左上角） */}
           <Logo />
-        </Box>
+          
+          {/* 搜索栏 */}
+          <Box width="60%" maxW="600px" mx={4}>
+            <SearchBar 
+              onSearch={handleSearch} 
+              onClear={clearSearch} 
+              isSearching={isSearching} 
+            />
+          </Box>
+          
+          {/* 占位，保持布局平衡 */}
+          <Box width="40px" visibility="hidden" />
+        </Flex>
         
-        <Flex h="100vh" overflow="hidden" position="relative" p={2} pt={16}>
+        <Flex h="100vh" overflow="hidden" position="relative" pt={20} pb={4}>
           {/* 左侧书架侧栏 */}
           <Box 
-            w="320px" 
+            w="260px" 
             h="100%" 
             bg="sidebar.bg" 
             boxShadow="dark-lg"
@@ -47,7 +69,8 @@ export default function Home() {
             zIndex="100"
             borderRadius="xl"
             overflow="visible"
-            mr={3}
+            mr={4}
+            ml={2}
           >
             <Sidebar />
           </Box>
@@ -62,17 +85,10 @@ export default function Home() {
             position="relative"
             zIndex="5"
             borderRadius="xl"
-            mr={2}
+            mr={4}
             id="main-content-area"
             className="main-content-area"
           >
-            {/* 搜索栏 */}
-            <SearchBar 
-              onSearch={handleSearch} 
-              onClear={clearSearch} 
-              isSearching={isSearching} 
-            />
-            
             {/* 文章内容 */}
             <MainContent showSearchResults={!!searchQuery} />
           </Box>

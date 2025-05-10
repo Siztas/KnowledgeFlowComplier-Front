@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Heading, Flex, useTheme } from "@chakra-ui/react";
+import { Box, Heading, Flex, useTheme, Text } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRightIcon } from "@chakra-ui/icons";
 import ShelfDroppable from "./ShelfDroppable";
@@ -135,6 +135,81 @@ const shouldShowExpandButton = (sidebarType: SidebarType): boolean => {
   return sidebarType !== 'original';
 };
 
+// 根据侧栏类型获取展开内容
+const getExpandedContent = (sidebarType: SidebarType) => {
+  switch (sidebarType) {
+    case 'bookshelf':
+      return (
+        <Box p={4}>
+          <Heading size="md" mb={4} color="white">书架文章RAG查询</Heading>
+          <RagQueryUI />
+        </Box>
+      );
+    case 'favorites':
+      return (
+        <Box p={4}>
+          <Heading size="md" mb={4} color="white">收藏内容分析</Heading>
+          <Text color="white" mb={4}>
+            基于您的收藏文章，我们生成了以下主题分布：
+          </Text>
+          <Box bg="#1a1a1a" p={4} borderRadius="md" color="whiteAlpha.800">
+            <Text mb={2}>• 深度学习：45%</Text>
+            <Text mb={2}>• 机器学习：30%</Text>
+            <Text mb={2}>• 自然语言处理：15%</Text>
+            <Text>• 其他主题：10%</Text>
+          </Box>
+        </Box>
+      );
+    case 'trending':
+      return (
+        <Box p={4}>
+          <Heading size="md" mb={4} color="white">热门研究动态</Heading>
+          <Box bg="#1a1a1a" p={4} borderRadius="md" mb={3} color="white">
+            <Heading size="sm" mb={2} color="brand.300">大型语言模型最新突破</Heading>
+            <Text fontSize="sm">最近一周内，大型语言模型领域有3项重大突破，影响因子均超过10。</Text>
+          </Box>
+          <Box bg="#1a1a1a" p={4} borderRadius="md" mb={3} color="white">
+            <Heading size="sm" mb={2} color="brand.300">多模态学习研究热点</Heading>
+            <Text fontSize="sm">视觉-语言预训练模型成为本月引用量最高的研究方向。</Text>
+          </Box>
+          <Box bg="#1a1a1a" p={4} borderRadius="md" color="white">
+            <Heading size="sm" mb={2} color="brand.300">前沿算法性能对比</Heading>
+            <Text fontSize="sm">最新发布的5种强化学习算法在标准测试中的表现对比数据。</Text>
+          </Box>
+        </Box>
+      );
+    case 'settings':
+      return (
+        <Box p={4}>
+          <Heading size="md" mb={4} color="white">系统设置</Heading>
+          <Text color="whiteAlpha.800" mb={6}>
+            在这里您可以调整应用的显示和功能设置。
+          </Text>
+          <Box bg="#1a1a1a" p={4} borderRadius="md" mb={4} color="white">
+            <Text fontWeight="bold" mb={2}>主题与界面</Text>
+            <Text fontSize="sm" color="whiteAlpha.700">
+              对应用的外观、配色和布局进行个性化设置。
+            </Text>
+          </Box>
+          <Box bg="#1a1a1a" p={4} borderRadius="md" mb={4} color="white">
+            <Text fontWeight="bold" mb={2}>数据与隐私</Text>
+            <Text fontSize="sm" color="whiteAlpha.700">
+              管理您的数据使用和隐私偏好设置。
+            </Text>
+          </Box>
+          <Box bg="#1a1a1a" p={4} borderRadius="md" color="white">
+            <Text fontWeight="bold" mb={2}>账户设置</Text>
+            <Text fontSize="sm" color="whiteAlpha.700">
+              更新您的账户信息和订阅设置。
+            </Text>
+          </Box>
+        </Box>
+      );
+    default:
+      return <RagQueryUI />;
+  }
+};
+
 const Sidebar = () => {
   const { isExpanded, toggleExpand, activeSidebar } = useSidebarStore();
   const theme = useTheme();
@@ -149,7 +224,7 @@ const Sidebar = () => {
         p={4} 
         h="100%" 
         animate={{ 
-          width: isExpanded ? "calc(80vw)" : "300px", // 展开时占据80%的视窗宽度
+          width: isExpanded ? "calc(80vw)" : "260px", // 展开时占据80%的视窗宽度，收起时与父容器宽度一致
           zIndex: isExpanded ? 200 : 100
         }}
         transition={{ 
@@ -163,17 +238,17 @@ const Sidebar = () => {
         bg="sidebar.bg"
         boxShadow={isExpanded ? "dark-lg" : "md"}
         className="sidebar"
-        ml={2}
+        ml={0}
         borderRadius="xl"
         overflow="hidden" // 确保内容不会溢出
       >
         {/* 左侧侧栏区域 - 固定宽度 */}
         <Flex 
           direction="column" 
-          width="280px" 
-          minWidth="280px"
+          width="260px" 
+          minWidth="260px"
           flexShrink={0} // 防止收缩
-          flexBasis="280px" // 确保基础尺寸也是固定的
+          flexBasis="260px" // 确保基础尺寸也是固定的
           borderRight={isExpanded ? "1px solid" : "none"}
           borderColor="whiteAlpha.200"
           position="relative"
@@ -201,7 +276,7 @@ const Sidebar = () => {
           </AnimatePresence>
         </Flex>
         
-        {/* 右侧RAG问答区域 - 仅在展开时显示 */}
+        {/* 右侧内容区域 - 仅在展开时显示，内容根据当前侧栏类型变化 */}
         {isExpanded && (
           <MotionBox
             flex="1"
@@ -216,7 +291,7 @@ const Sidebar = () => {
             overflowY="auto"
             pr={4}
           >
-            <RagQueryUI />
+            {getExpandedContent(activeSidebar)}
           </MotionBox>
         )}
       </MotionBox>

@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Box, SimpleGrid, Text, Image, Heading, Button, Flex } from "@chakra-ui/react";
+import { Box, SimpleGrid, Text, Image, Heading, Button, Flex, Badge, Spinner } from "@chakra-ui/react";
 import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
 import { useArticleStore } from "@/store/articleStore";
 import DraggableArticleCard from "./DraggableArticleCard";
 import { Article } from "@/types/article";
-import { ChevronLeftIcon, AddIcon } from "@chakra-ui/icons";
+import { ChevronLeftIcon, AddIcon, SearchIcon } from "@chakra-ui/icons";
 
 // 动画变体
 const variants = {
@@ -43,10 +43,12 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
   const articles = useArticleStore((state) => state.articles);
   const searchResults = useArticleStore((state) => state.searchResults);
   const searchQuery = useArticleStore((state) => state.searchQuery);
+  const isSearching = useArticleStore((state) => state.isSearching);
   const selectedArticle = useArticleStore((state) => state.selectedArticle);
   const setSelectedArticle = useArticleStore((state) => state.setSelectedArticle);
   const addToShelf = useArticleStore((state) => state.addToShelf);
   const isArticleInShelf = useArticleStore((state) => state.isArticleInShelf);
+  const clearSearch = useArticleStore((state) => state.clearSearch);
   
   // 用于左划的动作值
   const x = useMotionValue(0);
@@ -99,6 +101,22 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
     }
   };
 
+  // 从搜索结果中突出显示关键词
+  const highlightKeywords = (text: string, query: string) => {
+    if (!query || !text) return text;
+    
+    try {
+      const parts = text.split(new RegExp(`(${query})`, 'gi'));
+      return parts.map((part, i) => 
+        part.toLowerCase() === query.toLowerCase() ? 
+          <Box as="span" key={i} color="brand.300" fontWeight="bold">{part}</Box> : 
+          part
+      );
+    } catch (e) {
+      return text;
+    }
+  };
+
   return (
     <Box p={2}>
       {/* 搜索结果提示 */}
@@ -115,39 +133,76 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <Text color="white">
-            {searchResults.length > 0 
-              ? `搜索"${searchQuery}"，找到 ${searchResults.length} 条结果` 
-              : `未找到与"${searchQuery}"相关的文章`
-            }
-          </Text>
+          <Flex align="center">
+            <SearchIcon mr={2} color="brand.400" />
+            <Text color="white">
+              {isSearching ? (
+                <Flex align="center">
+                  <Spinner size="sm" mr={2} color="brand.400" />
+                  正在搜索"{searchQuery}"...
+                </Flex>
+              ) : searchResults.length > 0 ? (
+                <>搜索"{searchQuery}"，找到 <Badge colorScheme="brand" ml={1} mr={1}>{searchResults.length}</Badge> 条结果</>
+              ) : (
+                <>未找到与"<Box as="span" color="brand.300">{searchQuery}</Box>"相关的文章</>
+              )}
+            </Text>
+          </Flex>
+          
+          <Button 
+            size="sm"
+            variant="outline"
+            colorScheme="whiteAlpha"
+            onClick={clearSearch}
+          >
+            清除搜索
+          </Button>
         </MotionFlex>
       )}
       
+      {/* 正在搜索状态 */}
+      {isSearching && (
+        <Flex direction="column" justify="center" align="center" h="50vh">
+          <Spinner size="xl" color="brand.500" thickness="4px" speed="0.65s" mb={4} />
+          <Heading size="md" color="whiteAlpha.800">正在搜索中</Heading>
+          <Text color="whiteAlpha.600" mt={2}>请稍候片刻...</Text>
+        </Flex>
+      )}
+      
       {/* 文章卡片网格 - 5列布局 */}
-      <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5 }} gap={4} position="relative" zIndex="1">
-        {displayedArticles.length > 0 ? (
-          displayedArticles.map((article) => (
-            <MotionBox 
-              key={article.id} 
-              layoutId={`article-card-${article.id}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ 
-                duration: 0.3,
-                ease: "easeOut"
-              }}
-            >
-              <DraggableArticleCard article={article} />
-            </MotionBox>
-          ))
-        ) : showSearchResults ? (
-          <Box gridColumn="span 5" p={8} textAlign="center" color="whiteAlpha.700">
-            <Heading size="md">未找到相关文章</Heading>
-            <Text mt={4}>请尝试其他关键词搜索</Text>
-          </Box>
-        ) : null}
-      </SimpleGrid>
+      {!isSearching && (
+        <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5 }} gap={4} position="relative" zIndex="1">
+          {displayedArticles.length > 0 ? (
+            displayedArticles.map((article) => (
+              <MotionBox 
+                key={article.id} 
+                layoutId={`article-card-${article.id}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ 
+                  duration: 0.3,
+                  ease: "easeOut"
+                }}
+              >
+                <DraggableArticleCard article={article} />
+              </MotionBox>
+            ))
+          ) : showSearchResults ? (
+            <Box gridColumn="span 5" p={8} textAlign="center" color="whiteAlpha.700">
+              <Heading size="md">未找到相关文章</Heading>
+              <Text mt={4}>请尝试其他关键词搜索</Text>
+              <Button 
+                mt={6} 
+                colorScheme="brand" 
+                leftIcon={<SearchIcon />}
+                onClick={clearSearch}
+              >
+                返回全部文章
+              </Button>
+            </Box>
+          ) : null}
+        </SimpleGrid>
+      )}
 
       {/* 文章全文显示 - 模态对话框形式 - 移到最后确保在最上层 */}
       <AnimatePresence mode="wait">
@@ -224,7 +279,9 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
                   </motion.div>
                   
                   <motion.div layoutId={`article-title-${selectedArticle.id}`}>
-                    <Heading mb={4} color="white">{selectedArticle.title}</Heading>
+                    <Heading mb={4} color="white">
+                      {showSearchResults ? highlightKeywords(selectedArticle.title, searchQuery) : selectedArticle.title}
+                    </Heading>
                   </motion.div>
                   
                   <motion.div
@@ -233,7 +290,7 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
                     transition={{ delay: 0.2, ease: "easeOut" }}
                   >
                     <Text fontSize="lg" lineHeight="tall" color="whiteAlpha.900">
-                      {selectedArticle.content}
+                      {showSearchResults ? highlightKeywords(selectedArticle.content, searchQuery) : selectedArticle.content}
                     </Text>
                   </motion.div>
                 </Box>
