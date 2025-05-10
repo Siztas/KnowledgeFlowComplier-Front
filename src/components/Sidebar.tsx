@@ -11,24 +11,24 @@ import OriginalSidebar from "./OriginalSidebar";
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
 
-// 侧栏内容动画变体
+// 侧栏内容动画变体 - 改为上下拉动效果
 const sidebarContentVariants = {
   enter: (direction: number) => ({
-    x: direction > 0 ? 300 : -300,
+    y: direction > 0 ? 100 : -100,
     opacity: 0,
     scale: 0.9,
   }),
   center: {
-    x: 0,
+    y: 0,
     opacity: 1,
     scale: 1,
     transition: {
-      duration: 0.3,
+      duration: 0.4,
       ease: [0.25, 0.1, 0.25, 1.0],
     },
   },
   exit: (direction: number) => ({
-    x: direction < 0 ? 300 : -300,
+    y: direction < 0 ? 100 : -100,
     opacity: 0,
     scale: 0.9,
     transition: {
@@ -130,6 +130,11 @@ const getDirection = (current: SidebarType, previous: SidebarType | null): numbe
   return 0;
 };
 
+// 判断是否应显示展开按钮
+const shouldShowExpandButton = (sidebarType: SidebarType): boolean => {
+  return sidebarType !== 'original';
+};
+
 const Sidebar = () => {
   const { isExpanded, toggleExpand, activeSidebar } = useSidebarStore();
   const theme = useTheme();
@@ -216,41 +221,48 @@ const Sidebar = () => {
         )}
       </MotionBox>
 
-      {/* 半圆形展开按钮 - 确保可见，放在容器外部 */}
-      <MotionBox
-        position="absolute"
-        right="-15px"
-        top="50%"
-        transform="translateY(-50%)"
-        width="50px"
-        height="100px"
-        bg={sidebarColor}
-        borderRightRadius="full"
-        display="flex"
-        alignItems="center"
-        justifyContent="flex-start"
-        paddingLeft="15px"
-        cursor="pointer"
-        onClick={toggleExpand}
-        animate={{
-          right: isExpanded ? "20px" : "-25px",
-          transform: isExpanded ? "translateY(-50%) rotate(180deg)" : "translateY(-50%)",
-          backgroundColor: isExpanded ? sidebarHoverColor : sidebarColor
-        }}
-        transition={{ 
-          duration: 0.3,
-          ease: "easeInOut"
-        }}
-        zIndex={300} // 提高z-index确保按钮始终可见
-        boxShadow="0 0 15px rgba(0,0,0,0.4)"
-        _hover={{
-          bg: sidebarHoverColor,
-          boxShadow: "0 0 20px rgba(0,0,0,0.5)"
-        }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <ChevronRightIcon color="white" boxSize={7} fontWeight="bold" />
-      </MotionBox>
+      {/* 半圆形展开按钮 - 仅在非原始侧栏时显示 */}
+      <AnimatePresence>
+        {shouldShowExpandButton(activeSidebar) && (
+          <MotionBox
+            position="absolute"
+            right="-15px"
+            top="50%"
+            transform="translateY(-50%)"
+            width="50px"
+            height="100px"
+            bg={sidebarColor}
+            borderRightRadius="full"
+            display="flex"
+            alignItems="center"
+            justifyContent="flex-start"
+            paddingLeft="15px"
+            cursor="pointer"
+            onClick={toggleExpand}
+            animate={{
+              right: isExpanded ? "20px" : "-25px",
+              transform: isExpanded ? "translateY(-50%) rotate(180deg)" : "translateY(-50%)",
+              backgroundColor: isExpanded ? sidebarHoverColor : sidebarColor,
+              opacity: 1
+            }}
+            initial={{ opacity: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ 
+              duration: 0.3,
+              ease: "easeInOut"
+            }}
+            zIndex={300} // 提高z-index确保按钮始终可见
+            boxShadow="0 0 15px rgba(0,0,0,0.4)"
+            _hover={{
+              bg: sidebarHoverColor,
+              boxShadow: "0 0 20px rgba(0,0,0,0.5)"
+            }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <ChevronRightIcon color="white" boxSize={7} fontWeight="bold" />
+          </MotionBox>
+        )}
+      </AnimatePresence>
       
       {/* 半透明背景 - 仅在展开时显示 */}
       {isExpanded && (

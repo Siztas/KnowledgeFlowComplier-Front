@@ -3,10 +3,22 @@
 import { Box, Text, Flex } from "@chakra-ui/react";
 import { BsBookHalf } from "react-icons/bs";
 import { motion } from "framer-motion";
+import { useArticleStore } from "@/store/articleStore";
+import { useSidebarStore } from "@/store/sidebarStore";
 
 const MotionFlex = motion(Flex);
 
 const Logo = () => {
+  const { clearSearch } = useArticleStore();
+  const { setActiveSidebar } = useSidebarStore();
+  
+  // 处理Logo点击
+  const handleLogoClick = () => {
+    // 返回主页面 - 清除搜索状态，返回原始侧栏
+    clearSearch();
+    setActiveSidebar('original');
+  };
+  
   return (
     <MotionFlex
       align="center"
@@ -16,6 +28,9 @@ const Logo = () => {
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       transition={{ duration: 0.2 }}
+      onClick={handleLogoClick}
+      role="button"
+      aria-label="返回主页"
     >
       <Box
         bg="brand.500"

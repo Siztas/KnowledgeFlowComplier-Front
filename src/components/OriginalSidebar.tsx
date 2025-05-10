@@ -12,13 +12,14 @@ const MotionFlex = motion(Flex);
 const buttonVariants = {
   initial: { 
     backgroundColor: "transparent", 
-    color: "white" 
+    color: "white",
+    boxShadow: "none"
   },
   hover: { 
-    backgroundColor: "#2a2a2a", 
-    color: "var(--chakra-colors-brand-300)",
+    backgroundColor: "#2d2d2d", 
+    color: "#63B3ED", // 使用更亮的蓝色
     scale: 1.03,
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)"
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)"
   },
   tap: { 
     scale: 0.97,
@@ -60,6 +61,7 @@ const OriginalSidebar = () => {
             whileTap="tap"
             onClick={item.onClick}
             transition={{ duration: 0.2 }}
+            style={{ WebkitTapHighlightColor: "transparent" }}
           >
             <MotionBox 
               fontSize="xl" 
@@ -67,10 +69,13 @@ const OriginalSidebar = () => {
               variants={{
                 hover: { rotate: [0, -10, 10, -5, 0], transition: { duration: 0.5 } }
               }}
+              style={{ color: "inherit" }}
             >
               <item.icon />
             </MotionBox>
-            <Text fontWeight="medium">{item.name}</Text>
+            <Text fontWeight="medium" style={{ color: "inherit" }}>
+              {item.name}
+            </Text>
           </MotionFlex>
         ))}
       </VStack>
@@ -88,6 +93,7 @@ const OriginalSidebar = () => {
         onClick={settingsButton.onClick}
         transition={{ duration: 0.2 }}
         mb={4}
+        style={{ WebkitTapHighlightColor: "transparent" }}
       >
         <MotionBox 
           fontSize="xl" 
@@ -95,10 +101,13 @@ const OriginalSidebar = () => {
           variants={{
             hover: { rotate: 180, transition: { duration: 0.5 } }
           }}
+          style={{ color: "inherit" }}
         >
           <settingsButton.icon />
         </MotionBox>
-        <Text fontWeight="medium">{settingsButton.name}</Text>
+        <Text fontWeight="medium" style={{ color: "inherit" }}>
+          {settingsButton.name}
+        </Text>
       </MotionFlex>
     </Flex>
   );
