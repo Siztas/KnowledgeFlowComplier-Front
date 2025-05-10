@@ -13,17 +13,20 @@ const buttonVariants = {
   initial: { 
     backgroundColor: "transparent", 
     color: "white",
-    boxShadow: "none"
+    boxShadow: "none",
+    zIndex: 1
   },
   hover: { 
-    backgroundColor: "#2d2d2d", 
-    color: "#63B3ED", // 使用更亮的蓝色
-    scale: 1.03,
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)"
+    backgroundColor: "rgba(33, 150, 243, 0.15)", // 调整透明度，确保在暗色背景上可见
+    color: "#2196f3", // brand.500的颜色
+    scale: 1.05,
+    boxShadow: "0 4px 20px rgba(33, 150, 243, 0.3)", // 调整阴影效果
+    zIndex: 50 // 确保悬停元素位于顶层
   },
   tap: { 
     scale: 0.97,
-    backgroundColor: "#333333"
+    backgroundColor: "rgba(33, 150, 243, 0.2)", // 调整透明度
+    zIndex: 50
   }
 };
 
@@ -41,7 +44,26 @@ const OriginalSidebar = () => {
   const settingsButton = { id: 'settings', name: '设置', icon: BsGearWideConnected, onClick: () => setActiveSidebar('settings') };
   
   return (
-    <Flex direction="column" h="100%" justify="space-between" p={4} align="flex-start" width="100%">
+    <Flex 
+      direction="column" 
+      h="100%" 
+      justify="space-between" 
+      p={4} 
+      align="flex-start" 
+      width="100%"
+      sx={{
+        '& .nav-button:hover': {
+          backgroundColor: "rgba(33, 150, 243, 0.1)",  // 明确设置hover状态的背景色
+          borderLeft: "3px solid #2196f3 !important", // 强制应用左边框样式
+          color: "#2196f3"  // 设置文字颜色
+        },
+        '& .nav-button': {
+          transition: "all 0.3s ease",
+          borderLeft: "3px solid transparent",
+          position: "relative"
+        }
+      }}
+    >
       {/* 顶部导航按钮 */}
       <VStack spacing={6} align="flex-start" mt={6} width="90%" maxW="240px">
         {/* <Text fontSize="lg" fontWeight="bold" mb={2} color="white" textAlign="center">
@@ -60,21 +82,47 @@ const OriginalSidebar = () => {
             whileHover="hover"
             whileTap="tap"
             onClick={item.onClick}
-            transition={{ duration: 0.2 }}
-            style={{ WebkitTapHighlightColor: "transparent" }}
+            transition={{ duration: 0.3, type: "spring", stiffness: 400 }}
+            style={{ 
+              WebkitTapHighlightColor: "transparent",
+              borderLeft: "3px solid transparent",
+              paddingLeft: "10px",
+              position: "relative" // 添加相对定位以支持伪元素
+            }}
+            _hover={{
+              borderLeft: "3px solid #2196f3",
+              backgroundColor: "rgba(33, 150, 243, 0.1)" // 添加背景色增强视觉效果
+            }}
+            width="100%"
+            className="nav-button"
           >
             <MotionBox 
               fontSize="xl" 
               mr={3}
               variants={{
-                hover: { rotate: [0, -10, 10, -5, 0], transition: { duration: 0.5 } }
+                hover: { 
+                  rotate: [0, -10, 10, -5, 0], 
+                  scale: [1, 1.2, 1.1],
+                  color: "#2196f3", // 添加颜色变化
+                  transition: { 
+                    duration: 0.5,
+                    repeat: 0 
+                  } 
+                }
               }}
-              style={{ color: "inherit" }}
+              style={{ 
+                color: "inherit", 
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+              animate={{ scale: 1 }}
+              whileHover={{ scale: 1.2, color: "#2196f3" }}
               flexShrink={0}
             >
               <item.icon />
             </MotionBox>
-            <Text fontWeight="medium" style={{ color: "inherit" }} isTruncated>
+            <Text fontWeight="medium" style={{ color: "inherit", transition: "color 0.3s ease" }} isTruncated>
               {item.name}
             </Text>
           </MotionFlex>
@@ -93,21 +141,47 @@ const OriginalSidebar = () => {
           whileHover="hover"
           whileTap="tap"
           onClick={settingsButton.onClick}
-          transition={{ duration: 0.2 }}
-          style={{ WebkitTapHighlightColor: "transparent" }}
+          transition={{ duration: 0.3, type: "spring", stiffness: 400 }}
+          style={{ 
+            WebkitTapHighlightColor: "transparent",
+            borderLeft: "3px solid transparent",
+            paddingLeft: "10px",
+            position: "relative" // 添加相对定位以支持伪元素
+          }}
+          _hover={{
+            borderLeft: "3px solid #2196f3",
+            backgroundColor: "rgba(33, 150, 243, 0.1)" // 添加背景色增强视觉效果
+          }}
+          width="100%"
+          className="nav-button"
         >
           <MotionBox 
             fontSize="xl" 
             mr={3}
             variants={{
-              hover: { rotate: 180, transition: { duration: 0.5 } }
+              hover: { 
+                rotate: 180, 
+                scale: [1, 1.2, 1.1],
+                color: "#2196f3", // 添加颜色变化
+                transition: { 
+                  duration: 0.5,
+                  repeat: 0 
+                } 
+              }
             }}
-            style={{ color: "inherit" }}
+            style={{ 
+              color: "inherit", 
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            animate={{ scale: 1 }}
+            whileHover={{ scale: 1.2, color: "#2196f3", rotate: 180 }}
             flexShrink={0}
           >
             <settingsButton.icon />
           </MotionBox>
-          <Text fontWeight="medium" style={{ color: "inherit" }} isTruncated>
+          <Text fontWeight="medium" style={{ color: "inherit", transition: "color 0.3s ease" }} isTruncated>
             {settingsButton.name}
           </Text>
         </MotionFlex>
