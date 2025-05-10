@@ -1,0 +1,79 @@
+"use client";
+
+import { Box, Text, IconButton } from "@chakra-ui/react";
+import { CloseIcon } from "@chakra-ui/icons";
+import { SavedArticle } from "@/types/article";
+import { useArticleStore } from "@/store/articleStore";
+import { motion, AnimatePresence } from "framer-motion";
+
+interface ShelfArticleCardProps {
+  article: SavedArticle;
+}
+
+const MotionBox = motion(Box);
+
+const ShelfArticleCard = ({ article }: ShelfArticleCardProps) => {
+  const { id, title, imageUrl } = article;
+  const removeFromShelf = useArticleStore((state) => state.removeFromShelf);
+
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    removeFromShelf(id);
+  };
+
+  return (
+    <AnimatePresence>
+      <MotionBox
+        layout
+        initial={{ opacity: 0, x: -20, height: 0 }}
+        animate={{ opacity: 1, x: 0, height: "100px" }}
+        exit={{ opacity: 0, x: 20, height: 0 }}
+        transition={{ 
+          type: "spring",
+          stiffness: 500,
+          damping: 30,
+          opacity: { duration: 0.2 }
+        }}
+        borderWidth={1}
+        borderRadius="md"
+        overflow="hidden"
+        bg="white"
+        boxShadow="sm"
+        _hover={{ 
+          boxShadow: "md",
+          transform: "translateY(-2px)"
+        }}
+        cursor="pointer"
+        position="relative"
+        whileHover={{ scale: 1.02 }}
+      >
+        <IconButton
+          aria-label="从书架中移除"
+          icon={<CloseIcon />}
+          size="xs"
+          position="absolute"
+          top="5px"
+          right="5px"
+          zIndex={2}
+          onClick={handleRemove}
+          opacity={0.7}
+          _hover={{ opacity: 1, bg: "red.500", color: "white" }}
+          transition="all 0.2s"
+        />
+        <Box 
+          bgImage={`url(${imageUrl})`}
+          backgroundSize="cover"
+          backgroundPosition="center"
+          h="60px"
+        />
+        <Box p={2}>
+          <Text fontSize="sm" fontWeight="medium" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+            {title}
+          </Text>
+        </Box>
+      </MotionBox>
+    </AnimatePresence>
+  );
+};
+
+export default ShelfArticleCard; 

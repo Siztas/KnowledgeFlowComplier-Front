@@ -1,58 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Box, SimpleGrid, Text, Image, Heading, useDisclosure } from "@chakra-ui/react";
-import { motion } from "framer-motion";
-
-// 示例文章数据
-interface Article {
-  id: string;
-  title: string;
-  imageUrl: string;
-  content: string;
-}
-
-const sampleArticles: Article[] = [
-  {
-    id: "1",
-    title: "深度学习在自然语言处理中的最新进展",
-    imageUrl: "https://images.unsplash.com/photo-1526378800651-c32d170fe6f8?q=80&w=1000",
-    content: "深度学习技术在自然语言处理领域取得了显著进展。本文总结了最新的研究成果和应用案例，包括大型语言模型、多模态学习和跨语言迁移学习等方向。"
-  },
-  {
-    id: "2",
-    title: "图神经网络在推荐系统中的应用",
-    imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1000",
-    content: "本文探讨了图神经网络如何改进传统的推荐系统。通过建模用户-物品交互的图结构，图神经网络能够捕捉复杂的关系模式，提高推荐准确性和多样性。"
-  },
-  {
-    id: "3",
-    title: "强化学习在自动驾驶中的应用挑战",
-    imageUrl: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=1000",
-    content: "强化学习为自动驾驶技术提供了新的解决方案，但同时也面临着安全性、泛化能力和样本效率等挑战。本文分析了这些挑战并提出了可能的解决思路。"
-  },
-  {
-    id: "4",
-    title: "联邦学习：保护隐私的分布式机器学习范式",
-    imageUrl: "https://images.unsplash.com/photo-1516192518150-0d8fee5425e3?q=80&w=1000",
-    content: "联邦学习允许多个参与方在不共享原始数据的情况下共同训练机器学习模型，从而解决了数据隐私保护的问题。本文介绍了联邦学习的基本原理、技术挑战和最新进展。"
-  },
-  {
-    id: "5",
-    title: "量子机器学习：未来计算的新前沿",
-    imageUrl: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=1000",
-    content: "量子计算与机器学习的结合开创了量子机器学习这一新兴领域。本文讨论了量子机器学习算法的理论基础、潜在优势以及当前的实验进展。"
-  },
-];
+import { Box, SimpleGrid, Text, Image, Heading, Button, Flex } from "@chakra-ui/react";
+import { motion, useMotionValue, useTransform } from "framer-motion";
+import { useArticleStore } from "@/store/articleStore";
+import DraggableArticleCard from "./DraggableArticleCard";
+import { Article } from "@/types/article";
+import { ChevronLeftIcon, AddIcon } from "@chakra-ui/icons";
 
 // 动画变体
 const variants = {
-  card: {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, scale: 0.95 },
-    transition: { duration: 0.3 }
-  },
   fullArticle: {
     initial: { opacity: 0, scale: 0.8 },
     animate: { opacity: 1, scale: 1 },
@@ -62,16 +19,50 @@ const variants = {
 };
 
 const MotionBox = motion(Box);
+const MotionFlex = motion(Flex);
 
 const MainContent = () => {
-  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const articles = useArticleStore((state) => state.articles);
+  const selectedArticle = useArticleStore((state) => state.selectedArticle);
+  const setSelectedArticle = useArticleStore((state) => state.setSelectedArticle);
+  const addToShelf = useArticleStore((state) => state.addToShelf);
+  const isArticleInShelf = useArticleStore((state) => state.isArticleInShelf);
   
-  const handleCardClick = (article: Article) => {
-    setSelectedArticle(article);
-  };
+  // 用于左划的动作值
+  const x = useMotionValue(0);
+  const opacity = useTransform(x, [-200, 0], [0, 1]);
+  const scale = useTransform(x, [-200, 0], [0.8, 1]);
+  const [isSwipedLeft, setIsSwipedLeft] = useState(false);
   
   const handleClose = () => {
     setSelectedArticle(null);
+    setIsSwipedLeft(false);
+  };
+  
+  const handleAddToShelf = () => {
+    if (selectedArticle) {
+      addToShelf(selectedArticle);
+    }
+  };
+  
+  // 处理拖动结束
+  const handleDragEnd = (event: any, info: any) => {
+    // 如果向左滑动超过200px，添加到书架
+    if (info.offset.x < -200) {
+      setIsSwipedLeft(true);
+      if (selectedArticle) {
+        addToShelf(selectedArticle);
+        
+        // 添加短暂延迟后关闭全文视图
+        setTimeout(() => {
+          setSelectedArticle(null);
+          setIsSwipedLeft(false);
+        }, 500);
+      }
+    } else {
+      // 如果没有滑动足够距离，重置位置
+      x.set(0);
+    }
   };
 
   return (
@@ -86,61 +77,105 @@ const MainContent = () => {
           bottom="0"
           bg="white"
           zIndex="10"
-          p={8}
-          overflow="auto"
+          overflow="hidden"
           initial="initial"
           animate="animate"
           exit="exit"
           variants={variants.fullArticle}
-          onClick={handleClose}
         >
-          <Box maxW="800px" mx="auto">
-            <Image 
-              src={selectedArticle.imageUrl} 
-              alt={selectedArticle.title}
-              w="100%"
-              h="300px"
-              objectFit="cover"
+          <MotionFlex
+            direction="column"
+            h="100%"
+            style={{ x, opacity, scale }}
+            drag="x"
+            dragConstraints={{ left: -300, right: 0 }}
+            dragElastic={0.1}
+            onDragEnd={handleDragEnd}
+          >
+            <Flex p={4} justifyContent="space-between" alignItems="center" borderBottomWidth={1} borderColor="gray.200">
+              <Button leftIcon={<ChevronLeftIcon />} variant="ghost" onClick={handleClose}>
+                返回
+              </Button>
+              <Button 
+                leftIcon={<AddIcon />} 
+                colorScheme={isArticleInShelf(selectedArticle.id) ? "green" : "blue"}
+                variant={isArticleInShelf(selectedArticle.id) ? "solid" : "outline"}
+                onClick={handleAddToShelf}
+                isDisabled={isArticleInShelf(selectedArticle.id)}
+              >
+                {isArticleInShelf(selectedArticle.id) ? "已添加到书架" : "添加到书架"}
+              </Button>
+            </Flex>
+            
+            <Box flex="1" p={8} overflow="auto">
+              <Box maxW="800px" mx="auto">
+                <Image 
+                  src={selectedArticle.imageUrl} 
+                  alt={selectedArticle.title}
+                  w="100%"
+                  h="300px"
+                  objectFit="cover"
+                  borderRadius="md"
+                  mb={6}
+                />
+                <Heading mb={4}>{selectedArticle.title}</Heading>
+                <Text fontSize="lg" lineHeight="tall">
+                  {selectedArticle.content}
+                </Text>
+              </Box>
+            </Box>
+          </MotionFlex>
+          
+          {/* 左划提示 */}
+          <MotionBox
+            position="absolute"
+            left={0}
+            top="50%"
+            transform="translateY(-50%)"
+            bg="blue.500"
+            color="white"
+            p={4}
+            borderRightRadius="md"
+            initial={{ opacity: 0, x: -100 }}
+            animate={{ 
+              opacity: x.get() < -50 ? 1 : 0,
+              x: x.get() < -50 ? 0 : -100
+            }}
+            transition={{ duration: 0.2 }}
+          >
+            <Flex direction="column" alignItems="center">
+              <AddIcon mb={2} />
+              <Text>添加到书架</Text>
+            </Flex>
+          </MotionBox>
+          
+          {/* 成功添加提示 */}
+          {isSwipedLeft && (
+            <MotionBox
+              position="absolute"
+              top="50%"
+              left="50%"
+              transform="translate(-50%, -50%)"
+              bg="green.500"
+              color="white"
+              p={6}
               borderRadius="md"
-              mb={6}
-            />
-            <Heading mb={4}>{selectedArticle.title}</Heading>
-            <Text fontSize="lg" lineHeight="tall">
-              {selectedArticle.content}
-            </Text>
-          </Box>
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.3 }}
+              textAlign="center"
+            >
+              <Heading size="md">已添加到书架</Heading>
+            </MotionBox>
+          )}
         </MotionBox>
       )}
 
       {/* 文章卡片网格 */}
       <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={6}>
-        {sampleArticles.map((article) => (
-          <MotionBox
-            key={article.id}
-            bg="white"
-            borderRadius="lg"
-            overflow="hidden"
-            boxShadow="md"
-            cursor="pointer"
-            onClick={() => handleCardClick(article)}
-            whileHover={{ y: -5, boxShadow: "0 10px 30px -5px rgba(0, 0, 0, 0.1)" }}
-            initial="initial"
-            animate="animate"
-            variants={variants.card}
-          >
-            <Image 
-              src={article.imageUrl} 
-              alt={article.title}
-              w="100%"
-              h="200px"
-              objectFit="cover"
-            />
-            <Box p={4}>
-              <Heading size="md" mb={2}>
-                {article.title}
-              </Heading>
-            </Box>
-          </MotionBox>
+        {articles.map((article) => (
+          <DraggableArticleCard key={article.id} article={article} />
         ))}
       </SimpleGrid>
     </Box>
