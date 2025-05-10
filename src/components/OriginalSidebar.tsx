@@ -41,12 +41,12 @@ const OriginalSidebar = () => {
   const settingsButton = { id: 'settings', name: '设置', icon: BsGearWideConnected, onClick: () => setActiveSidebar('settings') };
   
   return (
-    <Flex direction="column" h="100%" justify="space-between" p={4}>
+    <Flex direction="column" h="100%" justify="space-between" p={4} align="flex-start" width="100%">
       {/* 顶部导航按钮 */}
-      <VStack spacing={6} align="stretch" mt={6}>
-        <Text fontSize="lg" fontWeight="bold" mb={2} color="white">
+      <VStack spacing={6} align="flex-start" mt={6} width="90%" maxW="240px">
+        {/* <Text fontSize="lg" fontWeight="bold" mb={2} color="white" textAlign="center">
           导航菜单
-        </Text>
+        </Text> */}
         
         {navigationItems.map((item) => (
           <MotionFlex
@@ -70,10 +70,11 @@ const OriginalSidebar = () => {
                 hover: { rotate: [0, -10, 10, -5, 0], transition: { duration: 0.5 } }
               }}
               style={{ color: "inherit" }}
+              flexShrink={0}
             >
               <item.icon />
             </MotionBox>
-            <Text fontWeight="medium" style={{ color: "inherit" }}>
+            <Text fontWeight="medium" style={{ color: "inherit" }} isTruncated>
               {item.name}
             </Text>
           </MotionFlex>
@@ -81,34 +82,36 @@ const OriginalSidebar = () => {
       </VStack>
       
       {/* 底部设置按钮 */}
-      <MotionFlex
-        align="center"
-        cursor="pointer"
-        p={3}
-        borderRadius="md"
-        variants={buttonVariants}
-        initial="initial"
-        whileHover="hover"
-        whileTap="tap"
-        onClick={settingsButton.onClick}
-        transition={{ duration: 0.2 }}
-        mb={4}
-        style={{ WebkitTapHighlightColor: "transparent" }}
-      >
-        <MotionBox 
-          fontSize="xl" 
-          mr={3}
-          variants={{
-            hover: { rotate: 180, transition: { duration: 0.5 } }
-          }}
-          style={{ color: "inherit" }}
+      <Box width="90%" maxW="240px" mb={4} alignSelf="flex-start">
+        <MotionFlex
+          align="center"
+          cursor="pointer"
+          p={3}
+          borderRadius="md"
+          variants={buttonVariants}
+          initial="initial"
+          whileHover="hover"
+          whileTap="tap"
+          onClick={settingsButton.onClick}
+          transition={{ duration: 0.2 }}
+          style={{ WebkitTapHighlightColor: "transparent" }}
         >
-          <settingsButton.icon />
-        </MotionBox>
-        <Text fontWeight="medium" style={{ color: "inherit" }}>
-          {settingsButton.name}
-        </Text>
-      </MotionFlex>
+          <MotionBox 
+            fontSize="xl" 
+            mr={3}
+            variants={{
+              hover: { rotate: 180, transition: { duration: 0.5 } }
+            }}
+            style={{ color: "inherit" }}
+            flexShrink={0}
+          >
+            <settingsButton.icon />
+          </MotionBox>
+          <Text fontWeight="medium" style={{ color: "inherit" }} isTruncated>
+            {settingsButton.name}
+          </Text>
+        </MotionFlex>
+      </Box>
     </Flex>
   );
 };

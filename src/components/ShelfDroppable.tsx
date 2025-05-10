@@ -20,7 +20,7 @@ const ShelfDroppable = () => {
   });
 
   return (
-    <Box h="100%" display="flex" justifyContent="center">
+    <Box h="100%" display="flex" justifyContent="center" width="100%" px={0} mx={0}>
       {/* 拖放区域 */}
       <MotionBox
         ref={setNodeRef}
@@ -30,8 +30,12 @@ const ShelfDroppable = () => {
         display="flex"
         flexDirection="column"
         borderRadius="md"
-        p={4}
-        width="260px" // 固定宽度，无论侧栏是否展开
+        p={3}
+        width="90%" // 使用百分比宽度以适应侧栏
+        maxW="200px" // 限制最大宽度，确保不会超出侧栏
+        ml={0}
+        mr={0}
+        mx="auto" // 确保水平居中
         flexShrink={0} // 防止收缩
         animate={{
           borderColor: isOver ? 'rgb(33, 150, 243)' : 'rgba(255, 255, 255, 0.2)',

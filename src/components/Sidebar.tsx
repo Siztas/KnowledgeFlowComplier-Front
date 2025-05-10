@@ -62,10 +62,18 @@ const BookshelfContent = () => {
   const { setActiveSidebar } = useSidebarStore();
   
   return (
-    <Flex direction="column" width="100%" height="100%">
+    <Flex direction="column" width="100%" height="100%" align="center" px={0}>
       <BackButton onClick={() => setActiveSidebar('original')} />
-      <Heading size="md" color="white" mb={6} mt={6} ml={4}>我的书架</Heading>
-      <Box flex="1 1 auto" overflow="center" width="100%" px={4}>
+      <Heading size="md" color="white" mb={6} mt={6} textAlign="center" width="90%">我的书架</Heading>
+      <Box 
+        flex="1 1 auto" 
+        overflow="hidden" 
+        width="100%" 
+        px={0}
+        display="flex" 
+        justifyContent="center"
+        alignItems="flex-start"
+      >
         <ShelfDroppable />
       </Box>
     </Flex>
@@ -77,11 +85,11 @@ const FavoritesContent = () => {
   const { setActiveSidebar } = useSidebarStore();
   
   return (
-    <Flex direction="column" width="100%" height="100%">
+    <Flex direction="column" width="100%" height="100%" align="center" px={0}>
       <BackButton onClick={() => setActiveSidebar('original')} />
-      <Heading size="md" color="white" mb={6} mt={6} ml={4}>我的收藏</Heading>
-      <Box flex="1" px={4} color="white">
-        <Box p={6} borderRadius="md" bg="#1a1a1a" textAlign="center">
+      <Heading size="md" color="white" mb={6} mt={6} textAlign="center" width="90%">我的收藏</Heading>
+      <Box flex="1" width="100%" display="flex" justifyContent="center" px={0}>
+        <Box p={4} borderRadius="md" bg="#1a1a1a" textAlign="center" width="90%" maxWidth="200px" mx="auto">
           暂无收藏内容
         </Box>
       </Box>
@@ -94,11 +102,11 @@ const TrendingContent = () => {
   const { setActiveSidebar } = useSidebarStore();
   
   return (
-    <Flex direction="column" width="100%" height="100%">
+    <Flex direction="column" width="100%" height="100%" align="center" px={0}>
       <BackButton onClick={() => setActiveSidebar('original')} />
-      <Heading size="md" color="white" mb={6} mt={6} ml={4}>研究热榜</Heading>
-      <Box flex="1" px={4} color="white">
-        <Box p={6} borderRadius="md" bg="#1a1a1a" textAlign="center">
+      <Heading size="md" color="white" mb={6} mt={6} textAlign="center" width="90%">研究热榜</Heading>
+      <Box flex="1" width="100%" display="flex" justifyContent="center" px={0}>
+        <Box p={4} borderRadius="md" bg="#1a1a1a" textAlign="center" width="90%" maxWidth="200px" mx="auto">
           正在获取热榜数据...
         </Box>
       </Box>
@@ -111,11 +119,11 @@ const SettingsContent = () => {
   const { setActiveSidebar } = useSidebarStore();
   
   return (
-    <Flex direction="column" width="100%" height="100%">
+    <Flex direction="column" width="100%" height="100%" align="center" px={0}>
       <BackButton onClick={() => setActiveSidebar('original')} />
-      <Heading size="md" color="white" mb={6} mt={6} ml={4}>设置</Heading>
-      <Box flex="1" px={4} color="white">
-        <Box p={6} borderRadius="md" bg="#1a1a1a" textAlign="center">
+      <Heading size="md" color="white" mb={6} mt={6} textAlign="center" width="90%">设置</Heading>
+      <Box flex="1" width="100%" display="flex" justifyContent="center" px={0}>
+        <Box p={4} borderRadius="md" bg="#1a1a1a" textAlign="center" width="90%" maxWidth="200px" mx="auto">
           设置内容将在后续版本中提供
         </Box>
       </Box>
@@ -140,14 +148,14 @@ const getExpandedContent = (sidebarType: SidebarType) => {
   switch (sidebarType) {
     case 'bookshelf':
       return (
-        <Box p={4}>
+        <Box p={4} maxW="100%" overflowX="hidden">
           <Heading size="md" mb={4} color="white">书架文章RAG查询</Heading>
           <RagQueryUI />
         </Box>
       );
     case 'favorites':
       return (
-        <Box p={4}>
+        <Box p={4} maxW="100%" overflowX="hidden">
           <Heading size="md" mb={4} color="white">收藏内容分析</Heading>
           <Text color="white" mb={4}>
             基于您的收藏文章，我们生成了以下主题分布：
@@ -162,7 +170,7 @@ const getExpandedContent = (sidebarType: SidebarType) => {
       );
     case 'trending':
       return (
-        <Box p={4}>
+        <Box p={4} maxW="100%" overflowX="hidden">
           <Heading size="md" mb={4} color="white">热门研究动态</Heading>
           <Box bg="#1a1a1a" p={4} borderRadius="md" mb={3} color="white">
             <Heading size="sm" mb={2} color="brand.300">大型语言模型最新突破</Heading>
@@ -180,7 +188,7 @@ const getExpandedContent = (sidebarType: SidebarType) => {
       );
     case 'settings':
       return (
-        <Box p={4}>
+        <Box p={4} maxW="100%" overflowX="hidden">
           <Heading size="md" mb={4} color="white">系统设置</Heading>
           <Text color="whiteAlpha.800" mb={6}>
             在这里您可以调整应用的显示和功能设置。
@@ -221,10 +229,12 @@ const Sidebar = () => {
   return (
     <Box position="relative" h="100%" zIndex="100">
       <MotionBox 
-        p={4} 
+        p={0} // 移除所有内边距，让子组件控制自己的布局
+        pt={2} // 仅保留顶部轻微内边距
+        pb={2} // 保留底部轻微内边距
         h="100%" 
         animate={{ 
-          width: isExpanded ? "calc(80vw)" : "260px", // 展开时占据80%的视窗宽度，收起时与父容器宽度一致
+          width: isExpanded ? "calc(75vw)" : "260px", // 收起时与父容器宽度一致，展开时保留一定右侧空间
           zIndex: isExpanded ? 200 : 100
         }}
         transition={{ 
@@ -253,6 +263,8 @@ const Sidebar = () => {
           borderColor="whiteAlpha.200"
           position="relative"
           overflow="hidden" // 确保动画不会溢出
+          pb={2} // 添加底部内边距
+          px={0} // 移除水平内边距
         >
           {/* 使用AnimatePresence和动态key实现侧栏切换动画 */}
           <AnimatePresence initial={false} mode="wait" custom={getDirection(activeSidebar, null)}>
@@ -266,6 +278,9 @@ const Sidebar = () => {
               direction="column"
               width="100%"
               height="100%"
+              align="center"
+              justify="flex-start"
+              px={0} // 移除水平内边距
             >
               {activeSidebar === 'original' && <OriginalSidebar />}
               {activeSidebar === 'bookshelf' && <BookshelfContent />}
@@ -289,7 +304,9 @@ const Sidebar = () => {
               ease: "easeOut"
             }}
             overflowY="auto"
+            overflowX="hidden"
             pr={4}
+            maxW="calc(100% - 260px - 6rem)"
           >
             {getExpandedContent(activeSidebar)}
           </MotionBox>
@@ -315,7 +332,7 @@ const Sidebar = () => {
             cursor="pointer"
             onClick={toggleExpand}
             animate={{
-              right: isExpanded ? "20px" : "-25px",
+              right: isExpanded ? "0px" : "-51px",
               transform: isExpanded ? "translateY(-50%) rotate(180deg)" : "translateY(-50%)",
               backgroundColor: isExpanded ? sidebarHoverColor : sidebarColor,
               opacity: 1
@@ -345,7 +362,7 @@ const Sidebar = () => {
           position="fixed"
           top={0}
           right={0}
-          width="20vw" // 占据视窗宽度的20%
+          width="25vw" // 与展开宽度配合，确保保留5%右侧空间
           height="100vh"
           bg="rgba(0, 0, 0, 0.5)"
           zIndex={199} // 低于侧栏但高于内容区域

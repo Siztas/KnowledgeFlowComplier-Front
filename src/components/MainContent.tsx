@@ -16,7 +16,7 @@ const variants = {
     exit: { opacity: 0 },
     transition: { 
       duration: 0.3,
-      ease: "easeInOut"
+      ease: "linear"
     }
   },
   fullArticle: {
@@ -26,7 +26,7 @@ const variants = {
     transition: { 
       type: "tween",
       duration: 0.35,
-      ease: [0.25, 0.1, 0.25, 1.0] // 使用cubic-bezier曲线，更平滑的动画
+      ease: "linear" // 使用线性缓动函数实现直线运动
     }
   }
 };
@@ -118,7 +118,7 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
   };
 
   return (
-    <Box p={2}>
+    <Box p={2} maxW="100%" overflowX="hidden">
       {/* 搜索结果提示 */}
       {showSearchResults && (
         <MotionFlex
@@ -131,10 +131,11 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
           borderRadius="md"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.3, ease: "linear" }}
+          maxW="100%"
         >
-          <Flex align="center">
-            <SearchIcon mr={2} color="brand.400" />
+          <Flex align="center" flexWrap="wrap">
+            <SearchIcon mr={2} color="brand.400" flexShrink={0} />
             <Text color="white">
               {isSearching ? (
                 <Flex align="center">
@@ -154,6 +155,8 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
             variant="outline"
             colorScheme="whiteAlpha"
             onClick={clearSearch}
+            ml={2}
+            flexShrink={0}
           >
             清除搜索
           </Button>
@@ -171,7 +174,24 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
       
       {/* 文章卡片网格 - 5列布局 */}
       {!isSearching && (
-        <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5 }} gap={4} position="relative" zIndex="1">
+        <SimpleGrid 
+          columns={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5 }} 
+          gap={4} 
+          position="relative" 
+          zIndex="1"
+          justifyItems="center"
+          mx="auto"
+          maxW="100%"
+          sx={{
+            '&::-webkit-scrollbar': {
+              width: '0px',
+              background: 'transparent', 
+              display: 'none'
+            },
+            scrollbarWidth: 'none',
+            '-ms-overflow-style': 'none',
+          }}
+        >
           {displayedArticles.length > 0 ? (
             displayedArticles.map((article) => (
               <MotionBox 
@@ -181,8 +201,12 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ 
                   duration: 0.3,
-                  ease: "easeOut"
+                  ease: "linear"
                 }}
+                maxW="100%"
+                w="100%"
+                layout="position"
+                layoutDependency={true}
               >
                 <DraggableArticleCard article={article} />
               </MotionBox>
@@ -229,7 +253,7 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
               direction="column"
               maxW="900px" // 限制最大宽度
               maxH="90vh" // 限制最大高度
-              w="90%" // 占据屏幕90%宽度
+              w={{ base: "95%", md: "90%" }} // 占据屏幕宽度，移动端更大比例
               h="auto" // 高度自适应
               bg="card.bg"
               color="white"
@@ -247,7 +271,8 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
               animate="animate"
               exit="exit"
               layoutId={`article-card-${selectedArticle.id}`} // 添加layoutId用于动画连接
-              layout="position" // 添加layout属性以改进布局动画
+              layoutRoot={true} // 使用layoutRoot替代layout属性
+              transformTemplate={(props, transform) => `${transform} translateZ(0)`} // 强制GPU加速和直线变换
             >
               <Flex p={4} justifyContent="space-between" alignItems="center" borderBottomWidth={1} borderColor="whiteAlpha.200">
                 <Button leftIcon={<ChevronLeftIcon />} variant="ghost" onClick={handleClose}>
@@ -264,9 +289,12 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
                 </Button>
               </Flex>
               
-              <Box flex="1" p={8} overflow="auto">
+              <Box flex="1" p={4} overflow="auto">
                 <Box maxW="800px" mx="auto">
-                  <motion.div layoutId={`article-image-${selectedArticle.id}`}>
+                  <motion.div 
+                    layoutId={`article-image-${selectedArticle.id}`}
+                    transition={{ duration: 0.35, ease: "linear" }}
+                  >
                     <Image 
                       src={selectedArticle.imageUrl} 
                       alt={selectedArticle.title}
@@ -278,8 +306,11 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
                     />
                   </motion.div>
                   
-                  <motion.div layoutId={`article-title-${selectedArticle.id}`}>
-                    <Heading mb={4} color="white">
+                  <motion.div 
+                    layoutId={`article-title-${selectedArticle.id}`}
+                    transition={{ duration: 0.35, ease: "linear" }}
+                  >
+                    <Heading mb={4} color="white" fontSize={{ base: "xl", md: "2xl" }}>
                       {showSearchResults ? highlightKeywords(selectedArticle.title, searchQuery) : selectedArticle.title}
                     </Heading>
                   </motion.div>
@@ -287,9 +318,9 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2, ease: "easeOut" }}
+                    transition={{ delay: 0.2, ease: "linear" }}
                   >
-                    <Text fontSize="lg" lineHeight="tall" color="whiteAlpha.900">
+                    <Text fontSize={{ base: "md", md: "lg" }} lineHeight="tall" color="whiteAlpha.900">
                       {showSearchResults ? highlightKeywords(selectedArticle.content, searchQuery) : selectedArticle.content}
                     </Text>
                   </motion.div>
@@ -312,7 +343,7 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
                 opacity: x.get() < -50 ? 1 : 0,
                 x: x.get() < -50 ? 0 : -100
               }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.2, ease: "linear" }}
             >
               <Flex direction="column" alignItems="center">
                 <AddIcon mb={2} />
@@ -334,7 +365,7 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.3, ease: "linear" }}
                 textAlign="center"
               >
                 <Heading size="md">已添加到书架</Heading>

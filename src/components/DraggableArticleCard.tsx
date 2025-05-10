@@ -130,7 +130,11 @@ const DraggableArticleCard = ({ article }: DraggableArticleCardProps) => {
           <Box as="span" fontSize="xs" color="white">拖动</Box>
         </Box>
         
-        <motion.div layoutId={`article-image-${id}`} style={{ flex: "0 0 auto" }}>
+        <motion.div 
+          layoutId={`article-image-${id}`} 
+          style={{ flex: "0 0 auto" }}
+          transition={{ duration: 0.35, ease: "linear" }}
+        >
           <Image 
             src={imageUrl} 
             alt={title}
@@ -149,7 +153,10 @@ const DraggableArticleCard = ({ article }: DraggableArticleCardProps) => {
           justifyContent="flex-start"
           bg="transparent"
         >
-          <motion.div layoutId={`article-title-${id}`}>
+          <motion.div 
+            layoutId={`article-title-${id}`}
+            transition={{ duration: 0.35, ease: "linear" }}
+          >
             <Heading 
               size="sm" 
               mb={2} 

@@ -127,7 +127,7 @@ const FloatingNav = ({ onRefresh }: FloatingNavProps) => {
     <MotionFlex
       position="fixed"
       bottom="30px"
-      right="30px"
+      right="calc(5% + 15px)"
       direction="column"
       gap={3}
       zIndex={100}
