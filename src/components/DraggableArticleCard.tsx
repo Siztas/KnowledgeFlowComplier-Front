@@ -6,7 +6,6 @@ import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { Article } from "@/types/article";
 import { useArticleStore } from "@/store/articleStore";
-import { useState } from "react";
 
 interface DraggableArticleCardProps {
   article: Article;
@@ -37,8 +36,14 @@ const DraggableArticleCard = ({ article }: DraggableArticleCardProps) => {
     cursor: isDragging ? 'grabbing' : 'pointer',
   };
 
+  // 截取标题，显示为两行
+  const truncateTitle = (str: string, maxLength: number = 50) => {
+    if (str.length <= maxLength) return str;
+    return str.substring(0, maxLength) + '...';
+  };
+
   return (
-    <Box position="relative">
+    <Box position="relative" h="400px">
       {/* 拖动句柄 - 只在卡片顶部区域可拖动 */}
       <Box 
         ref={setNodeRef}
@@ -56,12 +61,16 @@ const DraggableArticleCard = ({ article }: DraggableArticleCardProps) => {
       {/* 卡片内容 - 点击时展开全文 */}
       <MotionBox
         style={style}
-        bg="white"
-        borderRadius="lg"
+        bg="transparent"
+        borderRadius="16px"
         overflow="hidden"
-        boxShadow="md"
+        boxShadow="0 8px 16px rgba(0, 0, 0, 0.4)"
         onClick={() => setSelectedArticle(article)}
-        whileHover={{ y: -5, boxShadow: "0 10px 30px -5px rgba(0, 0, 0, 0.1)" }}
+        whileHover={{ 
+          y: -6, 
+          boxShadow: "0 15px 25px rgba(0, 0, 0, 0.5)",
+          transition: { duration: 0.2 }
+        }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ 
           opacity: 1, 
@@ -75,6 +84,11 @@ const DraggableArticleCard = ({ article }: DraggableArticleCardProps) => {
           damping: 30
         }}
         position="relative"
+        height="100%"
+        width="100%"
+        display="flex"
+        flexDirection="column"
+        className="article-card"
       >
         {isArticleInShelf(id) && (
           <Box 
@@ -84,13 +98,15 @@ const DraggableArticleCard = ({ article }: DraggableArticleCardProps) => {
             bg="green.500" 
             color="white" 
             borderRadius="full" 
-            w="20px" 
-            h="20px" 
+            w="24px" 
+            h="24px" 
             display="flex" 
             alignItems="center" 
             justifyContent="center"
-            fontSize="xs"
+            fontSize="sm"
+            fontWeight="bold"
             zIndex={2}
+            boxShadow="0 2px 5px rgba(0, 0, 0, 0.3)"
           >
             ✓
           </Box>
@@ -101,7 +117,7 @@ const DraggableArticleCard = ({ article }: DraggableArticleCardProps) => {
           position="absolute" 
           top="10px" 
           left="10px" 
-          bg="gray.100" 
+          bg="blackAlpha.700" 
           borderRadius="md" 
           p={1}
           opacity={0.7}
@@ -109,21 +125,42 @@ const DraggableArticleCard = ({ article }: DraggableArticleCardProps) => {
           display="flex"
           alignItems="center"
           justifyContent="center"
+          boxShadow="0 2px 5px rgba(0, 0, 0, 0.2)"
         >
-          <Box as="span" fontSize="xs">拖动此处</Box>
+          <Box as="span" fontSize="xs" color="white">拖动</Box>
         </Box>
         
-        <Image 
-          src={imageUrl} 
-          alt={title}
-          w="100%"
-          h="200px"
-          objectFit="cover"
-        />
-        <Box p={4}>
-          <Heading size="md" mb={2}>
-            {title}
-          </Heading>
+        <motion.div layoutId={`article-image-${id}`} style={{ flex: "0 0 auto" }}>
+          <Image 
+            src={imageUrl} 
+            alt={title}
+            w="100%"
+            h="280px"
+            objectFit="cover"
+            borderRadius="16px"
+          />
+        </motion.div>
+        
+        <Box 
+          p={4} 
+          flex="1" 
+          display="flex" 
+          flexDirection="column" 
+          justifyContent="flex-start"
+          bg="transparent"
+        >
+          <motion.div layoutId={`article-title-${id}`}>
+            <Heading 
+              size="sm" 
+              mb={2} 
+              color="white" 
+              lineHeight="1.4"
+              fontWeight="500"
+              noOfLines={3}
+            >
+              {truncateTitle(title)}
+            </Heading>
+          </motion.div>
         </Box>
       </MotionBox>
     </Box>

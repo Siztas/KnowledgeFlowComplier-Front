@@ -11,14 +11,19 @@ const MainContent = dynamic(() => import('@/components/MainContent'), { ssr: fal
 export default function Home() {
   return (
     <DndProvider>
-      <Flex h="100vh" overflow="hidden">
+      <Flex h="100vh" overflow="hidden" position="relative" p={2}>
         {/* 左侧书架侧栏 */}
         <Box 
           w="300px" 
           h="100%" 
-          bg="white" 
-          boxShadow="md"
+          bg="sidebar.bg" 
+          boxShadow="dark-lg"
           transition="width 0.3s ease"
+          position="relative"
+          zIndex="100" // 提高侧边栏z-index确保始终在顶层
+          borderRadius="xl"
+          overflow="visible" // 改为visible以确保按钮可见
+          mr={3}
         >
           <Sidebar />
         </Box>
@@ -27,9 +32,13 @@ export default function Home() {
         <Box 
           flex="1" 
           h="100%" 
-          bg="gray.50" 
+          bg="black" 
           p={4} 
           overflow="auto"
+          position="relative"
+          zIndex="5" // 低于侧边栏
+          borderRadius="xl"
+          mr={2}
         >
           <MainContent />
         </Box>

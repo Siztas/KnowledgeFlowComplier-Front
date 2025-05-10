@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Heading, VStack, Text } from "@chakra-ui/react";
+import { Box, Grid, Text } from "@chakra-ui/react";
 import { useDroppable } from "@dnd-kit/core";
 import { useArticleStore } from "@/store/articleStore";
 import ShelfArticleCard from "./ShelfArticleCard";
@@ -8,7 +8,11 @@ import { motion } from "framer-motion";
 
 const MotionBox = motion(Box);
 
-const ShelfDroppable = () => {
+interface ShelfDroppableProps {
+  isExpanded?: boolean;
+}
+
+const ShelfDroppable = ({ isExpanded = false }: ShelfDroppableProps) => {
   const savedArticles = useArticleStore((state) => state.savedArticles);
   
   // 设置可放置区域
@@ -19,29 +23,22 @@ const ShelfDroppable = () => {
     }
   });
 
-  // 根据是否有拖拽物体悬停在上方设置样式
-  const dropStyle = {
-    borderColor: isOver ? 'blue.500' : 'gray.300',
-    borderWidth: isOver ? 3 : 2,
-    borderStyle: 'dashed',
-    backgroundColor: isOver ? 'blue.50' : 'transparent',
-  };
-
   return (
     <Box h="100%">
-      <Heading size="md" mb={6}>我的书架</Heading>
-      
+      {/* 拖放区域 */}
       <MotionBox
         ref={setNodeRef}
-        h={savedArticles.length === 0 ? "80%" : "auto"}
+        minH={savedArticles.length === 0 ? "200px" : "auto"}
+        maxH={isExpanded ? "300px" : "none"}
+        overflowY={isExpanded ? "auto" : "visible"}
         display="flex"
         flexDirection="column"
         borderRadius="md"
         p={4}
         animate={{
-          borderColor: isOver ? 'rgb(66, 153, 225)' : 'rgb(203, 213, 224)',
+          borderColor: isOver ? 'rgb(33, 150, 243)' : 'rgba(255, 255, 255, 0.2)',
           borderWidth: isOver ? '3px' : '2px',
-          backgroundColor: isOver ? 'rgba(235, 248, 255, 0.8)' : 'transparent',
+          backgroundColor: isOver ? 'rgba(33, 150, 243, 0.1)' : 'transparent',
           scale: isOver ? 1.02 : 1
         }}
         transition={{
@@ -51,7 +48,7 @@ const ShelfDroppable = () => {
         }}
         borderWidth={2}
         borderStyle="dashed"
-        borderColor="gray.300"
+        borderColor="whiteAlpha.200"
       >
         {savedArticles.length === 0 ? (
           <Box
@@ -67,17 +64,20 @@ const ShelfDroppable = () => {
               }}
               transition={{ duration: 0.2 }}
             >
-              <Text color={isOver ? "blue.500" : "gray.500"} fontWeight={isOver ? "medium" : "normal"}>
+              <Text color={isOver ? "brand.300" : "whiteAlpha.700"} fontWeight={isOver ? "medium" : "normal"}>
                 将文章拖放到此处收藏
               </Text>
             </MotionBox>
           </Box>
         ) : (
-          <VStack gap={4} alignItems="stretch">
+          <Grid 
+            templateColumns={isExpanded ? "repeat(auto-fill, minmax(200px, 1fr))" : "1fr"} 
+            gap={4}
+          >
             {savedArticles.map(article => (
               <ShelfArticleCard key={article.id} article={article} />
             ))}
-          </VStack>
+          </Grid>
         )}
       </MotionBox>
     </Box>

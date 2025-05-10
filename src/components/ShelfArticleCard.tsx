@@ -35,13 +35,15 @@ const ShelfArticleCard = ({ article }: ShelfArticleCardProps) => {
           opacity: { duration: 0.2 }
         }}
         borderWidth={1}
+        borderColor="whiteAlpha.200"
         borderRadius="md"
         overflow="hidden"
-        bg="white"
-        boxShadow="sm"
+        bg="card.bg"
+        boxShadow="dark-sm"
         _hover={{ 
-          boxShadow: "md",
-          transform: "translateY(-2px)"
+          boxShadow: "dark-md",
+          transform: "translateY(-2px)",
+          borderColor: "whiteAlpha.300"
         }}
         cursor="pointer"
         position="relative"
@@ -57,6 +59,8 @@ const ShelfArticleCard = ({ article }: ShelfArticleCardProps) => {
           zIndex={2}
           onClick={handleRemove}
           opacity={0.7}
+          bg="blackAlpha.600"
+          color="white"
           _hover={{ opacity: 1, bg: "red.500", color: "white" }}
           transition="all 0.2s"
         />
@@ -67,7 +71,14 @@ const ShelfArticleCard = ({ article }: ShelfArticleCardProps) => {
           h="60px"
         />
         <Box p={2}>
-          <Text fontSize="sm" fontWeight="medium" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+          <Text 
+            fontSize="sm" 
+            fontWeight="medium" 
+            overflow="hidden" 
+            textOverflow="ellipsis" 
+            whiteSpace="nowrap"
+            color="white"
+          >
             {title}
           </Text>
         </Box>

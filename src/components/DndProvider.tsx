@@ -73,24 +73,25 @@ const DndProvider = ({ children }: DndProviderProps) => {
                 opacity: 0.9, 
                 scale: 1.05,
                 rotate: 2,
-                boxShadow: "0 10px 25px rgba(0,0,0,0.2)"
+                boxShadow: "0 15px 30px rgba(0,0,0,0.4)"
               }}
               transition={{ duration: 0.2 }}
-              bg="white"
-              borderRadius="lg"
+              bg="card.bg"
+              borderRadius="16px"
               overflow="hidden"
-              boxShadow="lg"
+              boxShadow="dark-lg"
               w="280px"
+              className="article-card"
             >
               <Image 
                 src={activeArticle.imageUrl} 
                 alt={activeArticle.title}
                 w="100%"
-                h="150px"
+                h="180px"
                 objectFit="cover"
               />
               <Box p={3}>
-                <Heading size="sm" noOfLines={2}>
+                <Heading size="sm" noOfLines={2} color="white">
                   {activeArticle.title}
                 </Heading>
               </Box>
