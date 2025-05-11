@@ -31,14 +31,14 @@ const MotionBox = motion(Box);
 
 const RagQueryUI = () => {
   const [query, setQuery] = useState("");
-  const savedArticles = useArticleStore((state) => state.savedArticles);
+  const shelfArticles = useArticleStore((state) => state.shelfArticles);
   const fullArticles = useArticleStore((state) => state.articles);
   const toast = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [expandedSourceId, setExpandedSourceId] = useState<string | null>(null);
 
   // 获取完整的文章内容（包括内容）
-  const articlesWithContent = savedArticles.map(saved => {
+  const articlesWithContent = shelfArticles.map(saved => {
     const fullArticle = fullArticles.find(article => article.id === saved.id);
     return fullArticle || { 
       id: saved.id, 
@@ -243,21 +243,21 @@ const RagQueryUI = () => {
               boxShadow: "0 0 0 1px var(--chakra-colors-brand-500)",
             }}
             mr={2}
-            disabled={isLoading || (savedArticles.length === 0)}
+            disabled={isLoading || (shelfArticles.length === 0)}
           />
           <Button
             type="submit"
             colorScheme="brand"
             isLoading={isLoading}
             loadingText="查询中"
-            disabled={!query.trim() || (savedArticles.length === 0)}
+            disabled={!query.trim() || (shelfArticles.length === 0)}
           >
             发送
           </Button>
         </Flex>
       </form>
       
-      {savedArticles.length === 0 && (
+      {shelfArticles.length === 0 && (
         <Text fontSize="sm" color="red.300" mt={2}>
           请先添加文章到书架，才能使用RAG问答功能
         </Text>

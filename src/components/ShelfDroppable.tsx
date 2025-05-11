@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 const MotionBox = motion(Box);
 
 const ShelfDroppable = () => {
-  const savedArticles = useArticleStore((state) => state.savedArticles);
+  const shelfArticles = useArticleStore((state) => state.shelfArticles) || [];
   
   // 设置可放置区域
   const { isOver, setNodeRef } = useDroppable({
@@ -24,7 +24,7 @@ const ShelfDroppable = () => {
       {/* 拖放区域 */}
       <MotionBox
         ref={setNodeRef}
-        minH={savedArticles.length === 0 ? "200px" : "auto"}
+        minH={shelfArticles.length === 0 ? "200px" : "auto"}
         maxH="calc(100vh - 200px)" // 固定最大高度
         overflowY="auto"
         display="flex"
@@ -52,7 +52,7 @@ const ShelfDroppable = () => {
         borderStyle="dashed"
         borderColor="whiteAlpha.200"
       >
-        {savedArticles.length === 0 ? (
+        {shelfArticles.length === 0 ? (
           <Box
             flex="1"
             display="flex"
@@ -76,7 +76,7 @@ const ShelfDroppable = () => {
             templateColumns="1fr" // 始终保持单列布局
             gap={4}
           >
-            {savedArticles.map(article => (
+            {shelfArticles.map(article => (
               <ShelfArticleCard key={article.id} article={article} />
             ))}
           </Grid>
