@@ -10,6 +10,7 @@ import OriginalSidebar from "./OriginalSidebar";
 import { useState, useEffect } from "react";
 import TrendingContent from "./TrendingContent";
 import TrendingTimeline from "./TrendingTimeline";
+import SettingsContent from "./SettingsContent";
 
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
@@ -114,23 +115,6 @@ const FavoritesContent = () => {
   );
 };
 
-// 设置侧栏内容组件
-const SettingsContent = () => {
-  const { setActiveSidebar } = useSidebarStore();
-  
-  return (
-    <Flex direction="column" width="100%" height="100%" align="center" px={0}>
-      <BackButton onClick={() => setActiveSidebar('original')} />
-      <Heading size="md" color="white" mb={6} mt={6} textAlign="center" width="90%">设置</Heading>
-      <Box flex="1" width="100%" display="flex" justifyContent="center" px={0}>
-        <Box p={4} borderRadius="md" bg="#1a1a1a" textAlign="center" width="90%" maxWidth="200px" mx="auto">
-          设置内容将在后续版本中提供
-        </Box>
-      </Box>
-    </Flex>
-  );
-};
-
 // 获取方向值，用于动画
 const getDirection = (current: SidebarType, previous: SidebarType | null): number => {
   if (!previous || previous === 'original') return 1;
@@ -184,32 +168,7 @@ const getExpandedContent = (sidebarType: SidebarType) => {
         </Box>
       );
     case 'settings':
-      return (
-        <Box p={4} maxW="100%" overflowX="hidden">
-          <Heading size="md" mb={4} color="white">系统设置</Heading>
-          <Text color="whiteAlpha.800" mb={6}>
-            在这里您可以调整应用的显示和功能设置。
-          </Text>
-          <Box bg="#1a1a1a" p={4} borderRadius="md" mb={4} color="white">
-            <Text fontWeight="bold" mb={2}>主题与界面</Text>
-            <Text fontSize="sm" color="whiteAlpha.700">
-              对应用的外观、配色和布局进行个性化设置。
-            </Text>
-          </Box>
-          <Box bg="#1a1a1a" p={4} borderRadius="md" mb={4} color="white">
-            <Text fontWeight="bold" mb={2}>数据与隐私</Text>
-            <Text fontSize="sm" color="whiteAlpha.700">
-              管理您的数据使用和隐私偏好设置。
-            </Text>
-          </Box>
-          <Box bg="#1a1a1a" p={4} borderRadius="md" color="white">
-            <Text fontWeight="bold" mb={2}>账户设置</Text>
-            <Text fontSize="sm" color="whiteAlpha.700">
-              更新您的账户信息和订阅设置。
-            </Text>
-          </Box>
-        </Box>
-      );
+      return <SettingsContent />;
     default:
       return <RagQueryUI />;
   }

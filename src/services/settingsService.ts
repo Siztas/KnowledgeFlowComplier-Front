@@ -11,6 +11,10 @@ export interface UserSettings {
   emailNotifications: boolean;
   language: string;
   articlesPerPage: number;
+  contentPreferences?: {
+    topics: string[];
+    excludedTopics: string[];
+  };
   updatedAt?: string;
 }
 
