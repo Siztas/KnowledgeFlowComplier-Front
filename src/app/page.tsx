@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import DndProvider from '@/components/DndProvider';
 import { useArticleStore } from '@/store/articleStore';
 import Logo from '@/components/Logo';
+import DataInitializer from '@/components/DataInitializer';
 // import SearchBar from '@/components/SearchBar';
 
 // 使用动态导入，禁用SSR
@@ -30,6 +31,9 @@ export default function Home() {
   
   return (
     <DndProvider>
+      {/* 添加数据初始化组件 */}
+      <DataInitializer />
+      
       <Box position="relative" h="100vh" overflow="hidden" suppressHydrationWarning>
         {/* 主容器 - 添加水平方向的5%边距 */}
         <Container maxW="90%" mx="auto" h="100%" p={0} suppressHydrationWarning>

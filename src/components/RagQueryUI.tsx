@@ -9,16 +9,20 @@ import {
   Text, 
   Flex, 
   Heading, 
-  Divider, 
   Avatar, 
   Spinner,
   useToast,
   IconButton,
   Collapse,
   Badge,
-  Tooltip
+  Tooltip,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+  CloseButton
 } from "@chakra-ui/react";
-import { DeleteIcon } from "@chakra-ui/icons";
+import { DeleteIcon, WarningIcon } from "@chakra-ui/icons";
 import { useArticleStore } from "@/store/articleStore";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRagQuery, Message } from "@/hooks/useRagQuery";
@@ -50,7 +54,8 @@ const RagQueryUI = () => {
     isLoading, 
     error, 
     submitQuery,
-    clearMessages 
+    clearMessages,
+    hasDataset
   } = useRagQuery(articlesWithContent);
 
   // 处理查询提交
@@ -104,6 +109,19 @@ const RagQueryUI = () => {
           </Tooltip>
         )}
       </Flex>
+      
+      {!hasDataset && (
+        <Alert status="warning" mb={4} borderRadius="md">
+          <AlertIcon as={WarningIcon} />
+          <Box flex="1">
+            <AlertTitle>未连接RAG服务</AlertTitle>
+            <AlertDescription display="block">
+              目前使用的是模拟回答。当后端RAG服务可用时，将自动连接。
+            </AlertDescription>
+          </Box>
+          <CloseButton position="absolute" right="8px" top="8px" />
+        </Alert>
+      )}
       
       {/* 消息区域 */}
       <Box 
@@ -206,32 +224,44 @@ const RagQueryUI = () => {
         )}
       </Box>
       
-      {/* 输入框 */}
+      {/* 查询输入 */}
       <form onSubmit={handleSubmit}>
         <Flex>
-          <Input 
+          <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="输入您的问题..."
-            mr={2}
-            bg="whiteAlpha.50"
+            placeholder="输入问题..."
+            bg="sidebar.active"
             color="white"
             borderColor="whiteAlpha.300"
-            _hover={{ borderColor: "whiteAlpha.400" }}
-            _focus={{ borderColor: "brand.500" }}
-            disabled={isLoading || savedArticles.length === 0}
+            borderRadius="md"
+            _hover={{
+              borderColor: "whiteAlpha.400",
+            }}
+            _focus={{
+              borderColor: "brand.500",
+              boxShadow: "0 0 0 1px var(--chakra-colors-brand-500)",
+            }}
+            mr={2}
+            disabled={isLoading || (savedArticles.length === 0)}
           />
-          <Button 
-            type="submit" 
-            colorScheme="brand" 
+          <Button
+            type="submit"
+            colorScheme="brand"
             isLoading={isLoading}
             loadingText="查询中"
-            disabled={isLoading || !query.trim() || savedArticles.length === 0}
+            disabled={!query.trim() || (savedArticles.length === 0)}
           >
             发送
           </Button>
         </Flex>
       </form>
+      
+      {savedArticles.length === 0 && (
+        <Text fontSize="sm" color="red.300" mt={2}>
+          请先添加文章到书架，才能使用RAG问答功能
+        </Text>
+      )}
     </Box>
   );
 };

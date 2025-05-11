@@ -2,9 +2,12 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Article, SavedArticle } from '@/types/article';
+import { Article, ShelfArticle, SearchResult } from '@/types/article';
+import { articleService } from '@/services/articleService';
+import { shelfService } from '@/services/shelfService';
+import { USE_MOCK_DATA } from '@/utils/env';
 
-// 示例文章数据
+// 示例文章数据（开发环境使用）
 const sampleArticles: Article[] = [
   {
     id: "1",
@@ -70,59 +73,128 @@ const sampleArticles: Article[] = [
 
 // 文章状态接口
 interface ArticleState {
+  // 数据状态
   articles: Article[];
-  savedArticles: SavedArticle[];
+  shelfArticles: ShelfArticle[];
   selectedArticle: Article | null;
   searchQuery: string;
   isSearching: boolean;
-  searchResults: Article[];
+  searchResults: SearchResult[];
   
+  // 加载状态
+  isLoadingArticles: boolean;
+  isLoadingShelf: boolean;
+  isAddingToShelf: boolean;
+  isRemovingFromShelf: boolean;
+  
+  // 错误状态
+  articleError: string | null;
+  shelfError: string | null;
+  searchError: string | null;
+  
+  // 文章操作
   setSelectedArticle: (article: Article | null) => void;
-  addToShelf: (article: Article) => void;
-  removeFromShelf: (id: string) => void;
+  addToShelf: (article: Article) => Promise<void>;
+  removeFromShelf: (id: string) => Promise<void>;
   isArticleInShelf: (id: string) => boolean;
   
   // 搜索相关方法
   setSearchQuery: (query: string) => void;
   clearSearch: () => void;
-  searchArticles: (query: string) => void;
-  refreshArticles: () => void;
+  searchArticles: (query: string) => Promise<void>;
+  
+  // 数据加载方法
+  loadArticles: () => Promise<void>;
+  loadShelf: () => Promise<void>;
+  refreshArticles: () => Promise<void>;
 }
 
 // 创建文章状态存储
 export const useArticleStore = create<ArticleState>()(
   persist(
     (set, get) => ({
-      articles: sampleArticles,
-      savedArticles: [],
+      // 初始状态
+      articles: USE_MOCK_DATA ? sampleArticles : [],
+      shelfArticles: [],
       selectedArticle: null,
       searchQuery: "",
       isSearching: false,
       searchResults: [],
       
+      // 加载状态
+      isLoadingArticles: false,
+      isLoadingShelf: false,
+      isAddingToShelf: false,
+      isRemovingFromShelf: false,
+      
+      // 错误状态
+      articleError: null,
+      shelfError: null,
+      searchError: null,
+      
+      // 设置选中文章
       setSelectedArticle: (article) => set({ selectedArticle: article }),
       
-      addToShelf: (article) => {
-        const { savedArticles } = get();
+      // 添加文章到书架
+      addToShelf: async (article) => {
+        const { shelfArticles } = get();
+        
         // 检查文章是否已在书架中
-        if (!savedArticles.some(saved => saved.id === article.id)) {
-          const savedArticle: SavedArticle = {
-            id: article.id,
-            title: article.title,
-            imageUrl: article.imageUrl
-          };
-          set({ savedArticles: [...savedArticles, savedArticle] });
+        if (!shelfArticles.some(saved => saved.id === article.id)) {
+          set({ isAddingToShelf: true, shelfError: null });
+          
+          try {
+            if (!USE_MOCK_DATA) {
+              // 调用API添加文章到书架
+              await shelfService.addToShelf(article.id);
+              // 重新加载书架
+              await get().loadShelf();
+            } else {
+              // 开发环境：本地添加
+              const savedArticle: ShelfArticle = {
+                id: article.id,
+                title: article.title,
+                imageUrl: article.imageUrl,
+                savedAt: new Date().toISOString()
+              };
+              set({ shelfArticles: [...shelfArticles, savedArticle] });
+            }
+          } catch (error) {
+            console.error('添加文章到书架失败:', error);
+            set({ shelfError: error instanceof Error ? error.message : '添加文章到书架失败' });
+          } finally {
+            set({ isAddingToShelf: false });
+          }
         }
       },
       
-      removeFromShelf: (id) => {
-        const { savedArticles } = get();
-        set({ savedArticles: savedArticles.filter(article => article.id !== id) });
+      // 从书架中移除文章
+      removeFromShelf: async (id) => {
+        set({ isRemovingFromShelf: true, shelfError: null });
+        
+        try {
+          if (!USE_MOCK_DATA) {
+            // 调用API从书架中移除文章
+            await shelfService.removeFromShelf(id);
+            // 重新加载书架
+            await get().loadShelf();
+          } else {
+            // 开发环境：本地移除
+            const { shelfArticles } = get();
+            set({ shelfArticles: shelfArticles.filter(article => article.id !== id) });
+          }
+        } catch (error) {
+          console.error('从书架移除文章失败:', error);
+          set({ shelfError: error instanceof Error ? error.message : '从书架移除文章失败' });
+        } finally {
+          set({ isRemovingFromShelf: false });
+        }
       },
       
+      // 检查文章是否在书架中
       isArticleInShelf: (id) => {
-        const { savedArticles } = get();
-        return savedArticles.some(article => article.id === id);
+        const { shelfArticles } = get();
+        return shelfArticles.some(article => article.id === id);
       },
       
       // 设置搜索查询
@@ -136,60 +208,113 @@ export const useArticleStore = create<ArticleState>()(
       }),
       
       // 执行搜索
-      searchArticles: (query) => {
-        const { articles } = get();
-        set({ isSearching: true, searchQuery: query });
+      searchArticles: async (query) => {
+        set({ isSearching: true, searchQuery: query, searchError: null });
         
-        // 模拟API调用延迟
-        let searchTimer: NodeJS.Timeout | null = setTimeout(() => {
-          // 简单的客户端搜索实现，实际情况可能需要API调用
-          const results = articles.filter(article => 
-            article.title.toLowerCase().includes(query.toLowerCase()) || 
-            article.content.toLowerCase().includes(query.toLowerCase())
-          );
-          
-          // 随机排序结果，使搜索结果看起来更真实
-          const sortedResults = [...results].sort((a, b) => {
-            // 标题匹配的优先级高于内容匹配
-            const titleMatchA = a.title.toLowerCase().includes(query.toLowerCase());
-            const titleMatchB = b.title.toLowerCase().includes(query.toLowerCase());
+        try {
+          if (!USE_MOCK_DATA) {
+            // 调用API搜索文章
+            const response = await articleService.searchArticles({
+              query,
+              page: 1,
+              pageSize: 20
+            });
+            set({ searchResults: response.results });
+          } else {
+            // 开发环境：客户端搜索
+            await new Promise(resolve => setTimeout(resolve, 1000)); // 模拟延迟
             
-            if (titleMatchA && !titleMatchB) return -1;
-            if (!titleMatchA && titleMatchB) return 1;
+            const { articles } = get();
+            // 简单的客户端搜索实现
+            const results = articles.filter(article => 
+              article.title.toLowerCase().includes(query.toLowerCase()) || 
+              article.content.toLowerCase().includes(query.toLowerCase())
+            );
             
-            // 如果匹配类型相同，随机排序
-            return Math.random() - 0.5;
-          });
-          
-          set({ searchResults: sortedResults, isSearching: false });
-        }, 1500); // 模拟延迟1.5秒
-        
-        // 返回一个清理函数，确保在组件卸载时取消定时器
-        return () => {
-          if (searchTimer) {
-            clearTimeout(searchTimer);
-            searchTimer = null;
+            // 随机排序结果，使搜索结果看起来更真实
+            const sortedResults = [...results].sort((a, b) => {
+              // 标题匹配的优先级高于内容匹配
+              const titleMatchA = a.title.toLowerCase().includes(query.toLowerCase());
+              const titleMatchB = b.title.toLowerCase().includes(query.toLowerCase());
+              
+              if (titleMatchA && !titleMatchB) return -1;
+              if (!titleMatchA && titleMatchB) return 1;
+              
+              // 如果匹配类型相同，随机排序
+              return Math.random() - 0.5;
+            });
+            
+            // 将Article转换为SearchResult
+            const searchResults: SearchResult[] = sortedResults.map(article => ({
+              id: article.id,
+              title: article.title,
+              imageUrl: article.imageUrl,
+              summary: article.content.substring(0, 150) + '...',
+              relevanceScore: Math.random() * 0.5 + 0.5, // 模拟0.5-1.0的相关度分数
+              tags: article.tags || []
+            }));
+            
+            set({ searchResults });
           }
-        };
+        } catch (error) {
+          console.error('搜索文章失败:', error);
+          set({ searchError: error instanceof Error ? error.message : '搜索文章失败' });
+        } finally {
+          set({ isSearching: false });
+        }
+      },
+      
+      // 加载文章列表
+      loadArticles: async () => {
+        set({ isLoadingArticles: true, articleError: null });
+        
+        try {
+          if (!USE_MOCK_DATA) {
+            // 调用API获取文章列表
+            const response = await articleService.getArticles({
+              page: 1,
+              pageSize: 20
+            });
+            set({ articles: response.articles });
+          } else {
+            // 开发环境：使用示例数据
+            await new Promise(resolve => setTimeout(resolve, 500)); // 模拟延迟
+            set({ articles: sampleArticles });
+          }
+        } catch (error) {
+          console.error('加载文章失败:', error);
+          set({ articleError: error instanceof Error ? error.message : '加载文章失败' });
+        } finally {
+          set({ isLoadingArticles: false });
+        }
+      },
+      
+      // 加载书架
+      loadShelf: async () => {
+        set({ isLoadingShelf: true, shelfError: null });
+        
+        try {
+          if (!USE_MOCK_DATA) {
+            // 调用API获取书架
+            const response = await shelfService.getShelf();
+            set({ shelfArticles: response.articles });
+          } else {
+            // 开发环境：保持当前书架
+            // 不做任何操作，因为书架数据是本地存储的
+            await new Promise(resolve => setTimeout(resolve, 300)); // 模拟延迟
+          }
+        } catch (error) {
+          console.error('加载书架失败:', error);
+          set({ shelfError: error instanceof Error ? error.message : '加载书架失败' });
+        } finally {
+          set({ isLoadingShelf: false });
+        }
       },
       
       // 刷新文章
-      refreshArticles: () => {
-        // 在实际应用中，这里会从API获取新的文章
-        // 目前只是模拟刷新效果，随机排序文章
-        const { articles } = get();
-        
-        // 设置加载状态
-        set({ isSearching: true });
-        
-        // 模拟API调用延迟
-        setTimeout(() => {
-          const shuffledArticles = [...articles].sort(() => Math.random() - 0.5);
-          set({ 
-            articles: shuffledArticles,
-            isSearching: false
-          });
-        }, 1000); // 模拟1秒延迟
+      refreshArticles: async () => {
+        // 更新文章列表
+        await get().loadArticles();
       }
     }),
     {
