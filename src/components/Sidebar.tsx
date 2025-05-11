@@ -8,6 +8,8 @@ import RagQueryUI from "./RagQueryUI";
 import { useSidebarStore, SidebarType } from "@/store/sidebarStore";
 import OriginalSidebar from "./OriginalSidebar";
 import { useState, useEffect } from "react";
+import TrendingContent from "./TrendingContent";
+import TrendingTimeline from "./TrendingTimeline";
 
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
@@ -112,23 +114,6 @@ const FavoritesContent = () => {
   );
 };
 
-// 研究热榜侧栏内容组件
-const TrendingContent = () => {
-  const { setActiveSidebar } = useSidebarStore();
-  
-  return (
-    <Flex direction="column" width="100%" height="100%" align="center" px={0}>
-      <BackButton onClick={() => setActiveSidebar('original')} />
-      <Heading size="md" color="white" mb={6} mt={6} textAlign="center" width="90%">研究热榜</Heading>
-      <Box flex="1" width="100%" display="flex" justifyContent="center" px={0}>
-        <Box p={4} borderRadius="md" bg="#1a1a1a" textAlign="center" width="90%" maxWidth="200px" mx="auto">
-          正在获取热榜数据...
-        </Box>
-      </Box>
-    </Flex>
-  );
-};
-
 // 设置侧栏内容组件
 const SettingsContent = () => {
   const { setActiveSidebar } = useSidebarStore();
@@ -194,20 +179,8 @@ const getExpandedContent = (sidebarType: SidebarType) => {
       );
     case 'trending':
       return (
-        <Box p={4} maxW="100%" overflowX="hidden">
-          <Heading size="md" mb={4} color="white">热门研究动态</Heading>
-          <Box bg="#1a1a1a" p={4} borderRadius="md" mb={3} color="white">
-            <Heading size="sm" mb={2} color="brand.300">大型语言模型最新突破</Heading>
-            <Text fontSize="sm">最近一周内，大型语言模型领域有3项重大突破，影响因子均超过10。</Text>
-          </Box>
-          <Box bg="#1a1a1a" p={4} borderRadius="md" mb={3} color="white">
-            <Heading size="sm" mb={2} color="brand.300">多模态学习研究热点</Heading>
-            <Text fontSize="sm">视觉-语言预训练模型成为本月引用量最高的研究方向。</Text>
-          </Box>
-          <Box bg="#1a1a1a" p={4} borderRadius="md" color="white">
-            <Heading size="sm" mb={2} color="brand.300">前沿算法性能对比</Heading>
-            <Text fontSize="sm">最新发布的5种强化学习算法在标准测试中的表现对比数据。</Text>
-          </Box>
+        <Box p={4} maxW="100%" overflowX="hidden" height="100%">
+          <TrendingTimeline />
         </Box>
       );
     case 'settings':
