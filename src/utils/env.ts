@@ -7,8 +7,10 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
 // 是否使用模拟数据和服务（开发环境）
-export const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || true;
-export const USE_MOCK_SERVICE = process.env.NEXT_PUBLIC_USE_MOCK_SERVICE === 'true' || true;
+// export const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || true;
+// export const USE_MOCK_SERVICE = process.env.NEXT_PUBLIC_USE_MOCK_SERVICE === 'true' || true;
+export const USE_MOCK_DATA = true;
+export const USE_MOCK_SERVICE = true;
 
 // 当前环境
 export const IS_DEVELOPMENT = process.env.NODE_ENV === 'development' || true;

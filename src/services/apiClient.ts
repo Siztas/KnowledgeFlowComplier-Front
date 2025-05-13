@@ -6,6 +6,8 @@ import {
   convertKeysToSnakeCase, 
   normalizeIds 
 } from './utils/caseConverter';
+import { USE_MOCK_DATA } from '@/utils/env';
+import { mockApiHandler } from './utils/mockApiHandler';
 
 // 存储令牌的键名
 const TOKEN_STORAGE_KEY = 'auth_token';
@@ -66,6 +68,11 @@ class ApiClient {
     data?: any, 
     options?: RequestInit
   ): Promise<T> {
+    // 如果使用模拟数据，使用mockApiHandler处理请求
+    if (USE_MOCK_DATA) {
+      return mockApiHandler.handleRequest(endpoint, method, null, data) as T;
+    }
+    
     const url = `${API_BASE_URL}${endpoint}`;
     
     // 设置请求头
@@ -124,6 +131,11 @@ class ApiClient {
    * @returns 响应数据
    */
   async get<T = any>(endpoint: string, params?: Record<string, any>): Promise<T> {
+    // 如果使用模拟数据，使用mockApiHandler处理请求
+    if (USE_MOCK_DATA) {
+      return mockApiHandler.handleRequest(endpoint, 'GET', params) as T;
+    }
+    
     let url = endpoint;
     
     // 添加查询参数

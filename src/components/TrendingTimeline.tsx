@@ -3,7 +3,7 @@
 import { Box, Heading, Text, Flex, Spinner, useColorModeValue } from "@chakra-ui/react";
 import { useTrendingStore } from "@/store/trendingStore";
 import { useArticleStore } from "@/store/articleStore";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 // @ts-ignore
 import { Chrono } from "react-chrono";
 
@@ -25,11 +25,11 @@ const TrendingTimeline = () => {
   // 文章卡片背景色
   const cardBg = useColorModeValue("#1a1a1a", "#1a1a1a");
   
-  // 处理文章点击
-  const handleArticleClick = (index: number) => {
+  // 处理文章点击 - 使用useCallback以避免每次渲染都创建新函数
+  const handleArticleClick = useCallback((index: number) => {
     const article = trendingArticles[index];
     setSelectedArticle(article);
-  };
+  }, [trendingArticles, setSelectedArticle]);
   
   // 准备时间线数据
   const timelineItems = trendingArticles.map(article => {
@@ -107,7 +107,7 @@ const TrendingTimeline = () => {
             titleColor: "white",
             titleColorActive: "#3182CE",
           }}
-          onItemSelected={(data: any) => handleArticleClick(data)}
+          onItemSelected={handleArticleClick}
           scrollable={{ scrollbar: true }}
           enableOutline
         />

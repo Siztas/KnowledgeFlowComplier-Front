@@ -4,6 +4,8 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { ragService, RagQueryParams } from "@/services/ragService";
 import { Article } from "@/types/article";
 import { USE_MOCK_SERVICE } from '@/utils/env';
+import { mockRagflowService } from '@/services/mockRagflowService';
+import { StreamMessage } from "@/services/ragflowService";
 
 // 消息类型
 export type MessageType = 'user' | 'assistant';
@@ -30,68 +32,53 @@ export interface ErrorState {
 
 // 模拟服务（用于开发和测试）
 const mockRagService = {
-  async queryStream(params: RagQueryParams): Promise<Response> {
+  async queryStream(params: RagQueryParams, articles: Article[]): Promise<Response> {
     // 模拟流式响应
     const { question } = params;
     
     // 创建流式响应
     const stream = new ReadableStream({
       async start(controller) {
-        // 模拟延迟
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // 生成模拟回答
-        const answer = generateMockAnswer(question);
-        
-        // 将回答拆分为单词，模拟流式输出
-        const words = answer.split(' ');
-        
-        for (let i = 0; i < words.length; i++) {
-          // 模拟打字延迟
-          await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 150));
-          
-          // 发送Token
-          const data = {
-            text: (i === 0 ? '' : ' ') + words[i],
-            finished: false,
-            sources: null
-          };
-          
-          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(data)}\n\n`));
+        try {
+          // 使用mockRagflowService生成回答
+          await mockRagflowService.submitStreamQuery(
+            question, 
+            articles,
+            (message: StreamMessage) => {
+              switch (message.type) {
+                case 'token':
+                  const data = {
+                    text: message.content,
+                    finished: false,
+                    sources: null
+                  };
+                  controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(data)}\n\n`));
+                  break;
+                  
+                case 'sources':
+                  if (message.sources) {
+                    const finalData = {
+                      text: message.sources.map(src => src.content).join("\n"),
+                      finished: true,
+                      sources: message.sources
+                    };
+                    controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(finalData)}\n\n`));
+                  }
+                  break;
+                  
+                case 'end':
+                  controller.close();
+                  break;
+                  
+                case 'error':
+                  throw new Error(message.error);
+              }
+            }
+          );
+        } catch (error) {
+          console.error('Mock RAG streaming error:', error);
+          controller.close();
         }
-        
-        // 发送完整回答后，发送引用源
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // 模拟源文档
-        const sources = [
-          {
-            title: "深度学习入门指南",
-            content: "深度学习是机器学习的一个分支，它使用多层神经网络来模拟人脑的学习过程。",
-            metadata: {
-              article_id: "1",
-              tags: ["深度学习", "机器学习", "人工智能", "神经网络"]
-            }
-          },
-          {
-            title: "人工智能应用案例",
-            content: "人工智能技术已经在医疗、金融、教育等领域取得了显著的应用成果。",
-            metadata: {
-              article_id: "2", 
-              tags: ["人工智能", "应用案例"]
-            }
-          }
-        ];
-        
-        // 发送最终回答和源文档
-        const finalData = {
-          text: answer,
-          finished: true,
-          sources
-        };
-        
-        controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(finalData)}\n\n`));
-        controller.close();
       }
     });
     
@@ -105,25 +92,6 @@ const mockRagService = {
     });
   }
 };
-
-/**
- * 生成模拟回答
- */
-function generateMockAnswer(query: string): string {
-  const lowercaseQuery = query.toLowerCase();
-  
-  if (lowercaseQuery.includes("什么") || lowercaseQuery.includes("介绍")) {
-    return "根据您的问题，我可以提供相关概念的介绍。这些文章主要讨论了人工智能领域的最新进展，包括深度学习、神经网络和机器学习应用等方面。具体来说，深度学习是机器学习的一个分支，它使用多层神经网络来模拟人脑的学习过程，能够从大量数据中自动提取特征和模式。";
-  } else if (lowercaseQuery.includes("如何") || lowercaseQuery.includes("怎么")) {
-    return "基于您的问题，实现这一目标的方法包括：首先，需要明确问题定义和目标；其次，收集和预处理相关数据；然后，选择合适的模型架构并进行训练；最后，评估模型性能并进行必要的优化。在实践中，可能需要迭代多次才能达到满意的结果。";
-  } else if (lowercaseQuery.includes("比较") || lowercaseQuery.includes("区别")) {
-    return "从收藏的文章中可以看出，这些方法各有优缺点。传统方法计算成本低但精度有限；深度学习方法精度高但需要大量数据和计算资源；混合方法则试图结合两者优点。选择哪种方法应根据具体应用场景、可用资源和性能要求来决定。";
-  } else if (lowercaseQuery.includes("未来") || lowercaseQuery.includes("趋势")) {
-    return "根据研究文章，未来发展趋势可能包括：更高效的模型架构、更少的标注数据需求、更强的跨领域迁移能力，以及更好的可解释性。量子计算和神经形态计算等新兴技术也可能带来突破性进展。同时，隐私保护和伦理问题将越来越受到重视。";
-  } else {
-    return "基于您的问题，我可以提供以下信息：人工智能和机器学习领域正在各个领域取得突破性进展，但同时也面临着数据隐私、算法偏见和计算资源等方面的挑战。这些技术正在医疗、金融、教育等领域产生深远影响，改变着我们的生活和工作方式。";
-  }
-}
 
 /**
  * RAG查询Hook
@@ -248,7 +216,7 @@ export const useRagQuery = (articles: Article[]) => {
       
       // 调用流式查询API
       const response = USE_MOCK_SERVICE 
-        ? await mockRagService.queryStream(params)
+        ? await mockRagService.queryStream(params, articles)
         : await ragService.queryStream(params);
       
       if (!response.ok) {
@@ -303,10 +271,10 @@ export const useRagQuery = (articles: Article[]) => {
               if (data.finished && data.sources) {
                 // 添加源文档
                 const sources = data.sources.map((source: any) => ({
-                  id: source.metadata?.article_id || generateId(),
+                  id: source.metadata?.article_id || source.id || generateId(),
                   title: source.title,
                   content: source.content,
-                  relevance: source.metadata?.relevance || 0.9
+                  relevance: source.metadata?.relevance || source.relevance || 0.9
                 }));
                 
                 setMessages(prev => 

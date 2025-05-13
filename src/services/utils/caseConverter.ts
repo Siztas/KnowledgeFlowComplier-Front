@@ -1,87 +1,99 @@
+"use client";
+
 /**
  * 转换工具模块
  * 提供snake_case和camelCase之间的转换功能
  */
 
 /**
- * 将蛇形命名转换为驼峰命名
- * 例如：user_name -> userName
+ * 将字符串从蛇形命名转换为驼峰命名
+ * 例如：snake_case -> snakeCase
  */
-export const snakeToCamel = (str: string): string => {
+export function snakeToCamelCase(str: string): string {
   return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-};
+}
 
 /**
- * 将驼峰命名转换为蛇形命名
- * 例如：userName -> user_name
+ * 将字符串从驼峰命名转换为蛇形命名
+ * 例如：camelCase -> camel_case
  */
-export const camelToSnake = (str: string): string => {
-  return str.replace(/([A-Z])/g, (letter) => `_${letter.toLowerCase()}`);
-};
+export function camelToSnakeCase(str: string): string {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
 
 /**
- * 递归将对象的键从蛇形命名转换为驼峰命名
+ * 递归地将对象的所有键从蛇形命名转换为驼峰命名
  */
-export const convertKeysToCamelCase = <T>(obj: any): T => {
-  if (obj === null || obj === undefined || typeof obj !== 'object') {
+export function convertKeysToCamelCase<T = any>(obj: any): T {
+  if (obj === null || typeof obj !== 'object') {
     return obj;
   }
 
   if (Array.isArray(obj)) {
-    return obj.map(item => convertKeysToCamelCase(item)) as unknown as T;
+    return obj.map(convertKeysToCamelCase) as any;
   }
 
-  return Object.keys(obj).reduce((result, key) => {
-    const camelKey = snakeToCamel(key);
-    result[camelKey] = convertKeysToCamelCase(obj[key]);
-    return result;
-  }, {} as any) as T;
-};
+  const result: any = {};
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const camelKey = snakeToCamelCase(key);
+      result[camelKey] = convertKeysToCamelCase(obj[key]);
+    }
+  }
+  return result;
+}
 
 /**
- * 递归将对象的键从驼峰命名转换为蛇形命名
+ * 递归地将对象的所有键从驼峰命名转换为蛇形命名
  */
-export const convertKeysToSnakeCase = <T>(obj: any): T => {
-  if (obj === null || obj === undefined || typeof obj !== 'object') {
+export function convertKeysToSnakeCase<T = any>(obj: any): T {
+  if (obj === null || typeof obj !== 'object' || Array.isArray(obj)) {
+    return obj;
+  }
+
+  const result: any = {};
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const snakeKey = camelToSnakeCase(key);
+      result[snakeKey] = convertKeysToSnakeCase(obj[key]);
+    }
+  }
+  return result;
+}
+
+/**
+ * 规范化数据中的ID字段
+ * 有些API可能返回数值型ID，此函数将它们转换为字符串
+ * 也会将MongoDB风格的_id字段转换为id
+ */
+export function normalizeIds<T = any>(obj: any): T {
+  if (obj === null || typeof obj !== 'object') {
     return obj;
   }
 
   if (Array.isArray(obj)) {
-    return obj.map(item => convertKeysToSnakeCase(item)) as unknown as T;
+    return obj.map(normalizeIds) as any;
   }
 
-  return Object.keys(obj).reduce((result, key) => {
-    const snakeKey = camelToSnake(key);
-    result[snakeKey] = convertKeysToSnakeCase(obj[key]);
-    return result;
-  }, {} as any) as T;
-};
-
-/**
- * 将MongoDB风格的_id字段转换为id
- */
-export const normalizeIds = <T>(obj: any): T => {
-  if (obj === null || obj === undefined || typeof obj !== 'object') {
-    return obj;
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map(item => normalizeIds(item)) as unknown as T;
-  }
-
-  const result = { ...obj };
+  const result: any = { ...obj };
   
+  // 将id字段从数值转换为字符串（如果存在且为数值）
+  if ('id' in result && typeof result.id === 'number') {
+    result.id = String(result.id);
+  }
+  
+  // MongoDB风格的_id转换为id
   if ('_id' in result) {
     result.id = result._id;
     delete result._id;
   }
   
   // 递归处理嵌套对象
-  Object.keys(result).forEach(key => {
-    if (typeof result[key] === 'object' && result[key] !== null) {
+  for (const key in result) {
+    if (Object.prototype.hasOwnProperty.call(result, key) && typeof result[key] === 'object' && result[key] !== null) {
       result[key] = normalizeIds(result[key]);
     }
-  });
+  }
   
-  return result as T;
-}; 
+  return result;
+} 

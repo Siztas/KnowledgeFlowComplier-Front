@@ -2,6 +2,22 @@
 
 import { Article } from "@/types/article";
 import { RagResponse, StreamMessage } from "./ragflowService";
+import { mockRagResponses } from "@/utils/mockData";
+
+// Make sure all StreamMessage types have the correct properties
+declare module "./ragflowService" {
+  interface StreamMessage {
+    type: 'token' | 'sources' | 'end' | 'error';
+    content?: string;
+    sources?: Array<{
+      id: string;
+      title: string;
+      content: string;
+      relevance: number;
+    }>;
+    error?: string;
+  }
+}
 
 /**
  * 模拟RAGFlow服务
@@ -23,17 +39,13 @@ export const mockRagflowService = {
       throw new Error("书架为空，请先添加文章");
     }
     
-    // 选择最相关的文章作为源
-    const sources = articles.slice(0, Math.min(2, articles.length)).map((article, index) => ({
-      id: article.id,
-      title: article.title,
-      content: article.content.substring(0, 100) + "...",
-      relevance: 0.9 - (index * 0.2) // 模拟相关度
-    }));
+    // 使用本地自定义函数生成回答
+    const answer = generateMockAnswer(query, articles);
+    const sources = mockRagResponses.sourceExtraction(query, articles);
     
     // 构建响应
     return {
-      answer: `根据您书架中的文章，我可以回答您的问题"${query}"。\n\n${generateMockAnswer(query, articles)}`,
+      answer,
       sources
     };
   },
@@ -58,7 +70,7 @@ export const mockRagflowService = {
       return;
     }
     
-    // 生成模拟回答
+    // 使用本地自定义函数生成回答
     const answer = generateMockAnswer(query, articles);
     
     // 模拟流式传输延迟
@@ -79,13 +91,8 @@ export const mockRagflowService = {
     // 模拟延迟后发送源文档
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    // 选择最相关的文章作为源
-    const sources = articles.slice(0, Math.min(2, articles.length)).map((article, index) => ({
-      id: article.id,
-      title: article.title,
-      content: article.content.substring(0, 150) + "...",
-      relevance: 0.9 - (index * 0.2) // 模拟相关度
-    }));
+    // 使用集中管理的模拟数据获取源文档
+    const sources = mockRagResponses.sourceExtraction(query, articles);
     
     onMessage({
       type: 'sources',
@@ -105,7 +112,17 @@ export const mockRagflowService = {
  * @returns 模拟回答
  */
 function generateMockAnswer(query: string, articles: Article[]): string {
+  // 首先检查是否能在mockRagResponses的预设回答中找到匹配
   const lowercaseQuery = query.toLowerCase();
+  
+  // 检查预设问题是否有匹配
+  for (const [keyword, answer] of Object.entries(mockRagResponses.presetAnswers)) {
+    if (lowercaseQuery.includes(keyword.toLowerCase())) {
+      return answer;
+    }
+  }
+  
+  // 如果没有预设回答匹配，则使用基于文章的动态回答
   const articleTitles = articles.map(article => article.title).join("、");
   
   // 根据查询关键词生成不同的回答
