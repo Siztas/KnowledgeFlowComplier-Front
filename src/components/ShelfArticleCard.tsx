@@ -2,12 +2,13 @@
 
 import { Box, Text, IconButton } from "@chakra-ui/react";
 import { CloseIcon } from "@chakra-ui/icons";
-import { SavedArticle } from "@/types/article";
+import { ShelfArticle } from "@/types/article";
 import { useArticleStore } from "@/store/articleStore";
 import { motion, AnimatePresence } from "framer-motion";
+import EnhancedImage from "./EnhancedImage";
 
 interface ShelfArticleCardProps {
-  article: SavedArticle;
+  article: ShelfArticle;
 }
 
 const MotionBox = motion(Box);
@@ -64,12 +65,15 @@ const ShelfArticleCard = ({ article }: ShelfArticleCardProps) => {
           _hover={{ opacity: 1, bg: "red.500", color: "white" }}
           transition="all 0.2s"
         />
-        <Box 
-          bgImage={`url(${imageUrl})`}
-          backgroundSize="cover"
-          backgroundPosition="center"
-          h="60px"
-        />
+        <Box h="60px" overflow="hidden">
+          <EnhancedImage
+            src={imageUrl}
+            alt={title}
+            displayMode="thumbnail"
+            height="60px"
+            width="100%"
+          />
+        </Box>
         <Box p={2}>
           <Text 
             fontSize="sm" 

@@ -17,6 +17,8 @@ import { useFavoriteStore } from "@/store/favoriteStore";
 import { useArticleStore } from "@/store/articleStore";
 import { useEffect } from "react";
 import { DeleteIcon } from "@chakra-ui/icons";
+import { processImagePath } from "@/utils/imagePathProcessor";
+import EnhancedImage from "./EnhancedImage";
 
 const MotionBox = motion(Box);
 
@@ -133,14 +135,13 @@ const FavoriteArticleList = () => {
             {/* 文章图片 */}
             {article.imageUrl && (
               <Box ml={2} width="40px" height="40px" flexShrink={0}>
-                <Image 
+                <EnhancedImage 
                   src={article.imageUrl} 
                   alt={article.title}
+                  displayMode="thumbnail"
                   width="100%"
                   height="100%"
-                  objectFit="cover"
                   borderRadius="md"
-                  fallbackSrc="https://via.placeholder.com/40"
                 />
               </Box>
             )}

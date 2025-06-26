@@ -1,12 +1,20 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Box, SimpleGrid, Text, Image, Heading, Button, Flex, Badge, Spinner } from "@chakra-ui/react";
+import { Box, SimpleGrid, Text, Image, Heading, Button, Flex, Badge, Spinner, IconButton, useColorModeValue } from "@chakra-ui/react";
 import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
 import { useArticleStore } from "@/store/articleStore";
 import DraggableArticleCard from "./DraggableArticleCard";
 import { Article } from "@/types/article";
-import { ChevronLeftIcon, AddIcon, SearchIcon } from "@chakra-ui/icons";
+import { ChevronLeftIcon, AddIcon, SearchIcon, ArrowBackIcon, ChevronRightIcon } from "@chakra-ui/icons";
+import { useSearchStore } from "@/store/searchStore";
+import { highlight } from "@/utils/highlight";
+import ArticleList from "./ArticleList";
+import EmptyState from "./EmptyState";
+import LocalImage from "./LocalImage";
+import { processImagePath } from "@/utils/imagePathProcessor";
+import EnhancedImage from "./EnhancedImage";
+import MarkdownRenderer from "./MarkdownRenderer";
 
 // 动画变体
 const variants = {
@@ -136,18 +144,20 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
         >
           <Flex align="center" flexWrap="wrap">
             <SearchIcon mr={2} color="brand.400" flexShrink={0} />
-            <Text color="white">
-              {isSearching ? (
-                <Flex align="center">
-                  <Spinner size="sm" mr={2} color="brand.400" />
-                  正在搜索"{searchQuery}"...
-                </Flex>
-              ) : searchResults.length > 0 ? (
-                <>搜索"{searchQuery}"，找到 <Badge colorScheme="brand" ml={1} mr={1}>{searchResults.length}</Badge> 条结果</>
-              ) : (
-                <>未找到与"<Box as="span" color="brand.300">{searchQuery}</Box>"相关的文章</>
-              )}
-            </Text>
+            {isSearching ? (
+              <Flex align="center" color="white">
+                <Spinner size="sm" mr={2} color="brand.400" />
+                <Text as="span" color="white">正在搜索"{searchQuery}"...</Text>
+              </Flex>
+            ) : searchResults.length > 0 ? (
+              <Text as="span" color="white">
+                搜索"{searchQuery}"，找到 <Badge colorScheme="brand" ml={1} mr={1}>{searchResults.length}</Badge> 条结果
+              </Text>
+            ) : (
+              <Text as="span" color="white">
+                未找到与"<Box as="span" color="brand.300">{searchQuery}</Box>"相关的文章
+              </Text>
+            )}
           </Flex>
           
           <Button 
@@ -295,12 +305,13 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
                     layoutId={`article-image-${selectedArticle.id}`}
                     transition={{ duration: 0.35, ease: "linear" }}
                   >
-                    <Image 
+                    <EnhancedImage 
                       src={selectedArticle.imageUrl} 
                       alt={selectedArticle.title}
+                      displayMode="detail"
+                      enableZoom={true}
                       w="100%"
-                      h="300px"
-                      objectFit="cover"
+                      h="auto"
                       borderRadius="md"
                       mb={6}
                     />
@@ -320,9 +331,13 @@ const MainContent = ({ showSearchResults = false }: MainContentProps) => {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2, ease: "linear" }}
                   >
-                    <Text fontSize={{ base: "md", md: "lg" }} lineHeight="tall" color="whiteAlpha.900">
-                      {showSearchResults ? highlightKeywords(selectedArticle.content, searchQuery) : selectedArticle.content}
-                    </Text>
+                    {showSearchResults ? (
+                      <Text fontSize={{ base: "md", md: "lg" }} lineHeight="tall" color="whiteAlpha.900">
+                        {selectedArticle.content ? highlightKeywords(selectedArticle.content, searchQuery) : '暂无内容'}
+                      </Text>
+                    ) : (
+                      <MarkdownRenderer content={selectedArticle.content || ''} />
+                    )}
                   </motion.div>
                 </Box>
               </Box>

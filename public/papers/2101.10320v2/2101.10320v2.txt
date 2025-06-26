@@ -1,0 +1,253 @@
+标题：Identity-aware Graph Neural Networks
+
+footnote
+
+Message passing Graph Neural Networks (GNNs) provide a powerful modeling framework for relational data. However, the expressive power of existing GNNs is upper-bounded by the 1-Weisfeiler-Lehman (1-WL) graph isomorphism test, which means GNNs that are not able to predict node clustering coefficients and shortest path distances, and cannot differentiate between differentd𝑑d-regular graphs.
+Here we develop a class of message passing GNNs, namedIdentity-aware Graph Neural Networks (ID-GNNs), with greater expressive power than the 1-WL test. ID-GNN offers a minimal but powerful solution to limitations of existing GNNs.
+ID-GNN extends existing GNN architectures by inductively considering nodes’ identities during message passing.
+To embed a given node, ID-GNN first extracts the ego network centered at the node, then conducts rounds ofheterogeneous message passing,
+where different sets of parameters are applied to the center node than to other surrounding nodes in the ego network.
+We further propose a simplified but faster version of ID-GNN that injects node identity information as augmented node features.
+Altogether, both versions of ID-GNN represent general extensions of message passing GNNs, where experiments show that transforming existing GNNs to ID-GNNs yields on average 40% accuracy improvement on challenging node, edge, and graph property prediction tasks; 3% accuracy improvement on node and graph classification benchmarks; and 15% ROC AUC improvement on real-world link prediction tasks. Additionally, ID-GNNs demonstrate improved or comparable performance over other task-specific graph networks.
+
+Graph Neural Networks (GNNs) represent a powerful learning paradigm that have achieved great success(Scarselli et al.2008; Li et al.2016; Kipf and Welling2017; Hamilton, Ying, and Leskovec2017; Velickovic et al.2018; Xu et al.2019; You, Ying, and Leskovec2020). Among these models, messaging passing GNNs, such as GCN(Kipf and Welling2017), GraphSAGE(Hamilton, Ying, and Leskovec2017), and GAT(Velickovic et al.2018), are dominantly used today due to their simplicity, efficiency and strong performance in real-world applications(Zitnik and Leskovec2017; Ying et al.2018; You et al.2018a,2019b,2020a,2020b).
+The central idea behind message passing GNNs is to learn node embeddings via the repeated aggregation of information from local node neighborhoods using non-linear transformations(Battaglia et al.2018).
+
+Although GNNs represent a powerful learning paradigm, it has been shown that the expressive power of existing GNNs is upper-bounded by the 1-Weisfeiler-Lehman (1-WL) test(Xu et al.2019).
+Concretely, a fundamental limitation of existing GNNs is that two nodes with different neighborhood structure can have the same computational graph, thus appearing indistinguishable. Here, a computational graph specifies the procedure to produce a node’s embedding. Such failure cases are abundant (Figure1): in node classification tasks, existing GNNs fail to distinguish nodes that reside ind𝑑d-regular graphs of different sizes; in link prediction tasks, they cannot differentiate node candidates with the same neighborhood structures but different shortest path distance to the source node; and in graph classification tasks, they cannot differentiated𝑑d-regular graphs(Chen et al.2019; Murphy et al.2019).
+While task-specific feature augmentation can be used to mitigate these failure modes, the process of discovering meaningful features for different tasks is not generic and can, for example, hamper the inductive power of GNNs.
+
+[图片: images\image_1.png]
+图片说明: Figure 1:An overview of the proposed ID-GNN model.
+We consider node, edge and graph level tasks, and assume nodes do not have discriminative features.
+Across all examples, the task requires an embedding that allows for the differentiation of nodes labeledA𝐴Avs.B𝐵Bin their respective graphs. However, across all tasks, existing GNNs, regardless of their depth, willalwaysassign the same embedding to both nodesA𝐴AandB𝐵B, because for all tasks the computational graphs are identical (middle row). In contrast, the colored computational graphs provided by ID-GNN allow for clear differentiation between the nodes of labelA𝐴Aand labelB𝐵B, as the colored computational graphs are no longer identical across the tasks.
+
+Several recent methods aim to overcome these limitations in existing GNNs. For graph classification tasks, a collection of works propose novel architectures more expressive than the 1-WL test(Chen et al.2019; Maron et al.2019a; Murphy et al.2019). For link level tasks, P-GNNs are proposed to overcome the limitation of existing GNNs(You, Ying, and Leskovec2019). While these methods have a rich theoretical grounding, they are often task specific (either graph or link level) and often suffer from increased complexity in computation or implementation.
+In contrast, message passing GNNs have a track record of high predictive performance across node, link, and graph level tasks, while being simple and efficient to implement.
+Therefore, extending message passing GNNs beyond the expressiveness of 1-WL test, to overcome current GNN limitations, is a problem of high importance.
+
+Present work. Here we propose Identity-aware Graph Neural Networks (ID-GNNs), a class ofmessage passing GNNs with expressive power beyond the 1-WL test111Project website with code:http://snap.stanford.edu/idgnn.
+ID-GNN provides a universal extension and makesanyexisting message passing GNN more expressive.
+ID-GNN embeds each node byinductivelytaking into account its identity during message passing. The approach is different from labeling each node with a one-hot encoding, which istransductive(cannot generalize to unseen graphs).
+As shown in Figure1, we use aninductive identity coloringtechnique to distinguish a node itself (the root node in the computational graph) from other nodes in its local neighborhood, within its respective computational graph.
+This added identity information allows ID-GNN to distinguish what would be identical computational graphs across node, edge and graph level tasks, and this way overcome the previously discussed limitations.
+
+We propose two versions of ID-GNN.
+As a general approach, identity information is incorporated by applying rounds ofheterogeneous message passing. Specifically, to embed a given node, ID-GNN first extracts the ego network centered at that node, then applies message passing, where the messages from the center node (colored nodes in Figure1) and the rest of the nodes are computed usingdifferent sets of parameters. This approach naturally applies to applications involving node or edge features.
+We also consider a simplified version of ID-GNN, where we inject identity information via cycle counts originating from a given node as augmented node features. These cycle counts capture node identity information by counting the colored nodes within each layer of the ID-GNN computational graph, and can be efficiently computed by powers of a graph’s adjacency matrix.
+
+We compare ID-GNNs against GNNs across 8 datasets and 6 different tasks.
+First, we consider a collection of challenging graph property prediction tasks where existing GNNs fail, including predicting node clustering coefficient, predicting shortest path distance, and differentiating randomd𝑑d-regular graphs. Then, we further apply ID-GNNs to real-world datasets.
+Results show that transforming existing GNNs to their ID-GNN versions yields on average 40% accuracy improvement on challenging node, edge, and graph property prediction tasks; 3% accuracy improvement on node and graph classification benchmarks; and 15% ROC AUC improvement on real-world link prediction tasks.
+Additionally, we compare ID-GNNs against other expressive graph networks that are specifically designed for edge or graph-level tasks.
+ID-GNNs demonstrate improved or comparable performance over these models, further emphasizing the versatility of ID-GNNs.
+
+Our key contribution includes:(1)We show that message passing GNNs can have expressive power beyond 1-WL test.(2)We propose ID-GNNs as a general solution to the limitations in existing GNNs, with rich theoretical and experimental results.(3)We present synthetic and real world tasks to reveal the failure modes of existing GNNs and demonstrate the superior performance of ID-GNNs over both existing GNNs and other powerful graph networks.
+
+Expressive neural networks beyond 1-WL test.
+Recently, many neural networks have been proposed with expressive power beyond the 1-WL test, including(Chen et al.2019; Maron et al.2019a; Murphy et al.2019; You, Ying, and Leskovec2019; Li et al.2020). However, these papers introduce extra, often task/domain specific, components beyond standard message passing GNNs. For example, P-GNN’s embeddings are tied with random anchor-sets and, thus, are not applicable to node/graph level tasks which require deterministic node embeddings(You, Ying, and Leskovec2019).
+In this paper we emphasize the advantageous characteristics of message passing GNNs, and show that GNNs, after incorporating inductive identity information, can surpass the expressive power of the 1-WL test while maintaining benefits of efficiency, simplicity, and broad applicability.
+
+Graph Neural Networks with inductive coloring.
+Several models color nodes with augmented features to boost existing GNNs’ performance(Xu et al.2020; Veličković et al.2020; Zhang and Chen2018).
+However, existing coloring techniques are problem and domain-specific (i.e.link prediction, algorithm execution), and are not generally applicable to node and graph-level tasks. In contrast,
+ID-GNN is a general model that can be applied to any node, edge, and graph level task. It further adopts a heterogeneous message passing approach, which is fully compatible to cases where nodes or edges have rich features.
+
+GNNs with anisotropic message passing.
+We emphasize that ID-GNNs are fundamentally different from GNNs based on anisotropic message passing, where different attention weights are applied to different incoming edges(Bresson and Laurent2017; Hamilton, Ying, and Leskovec2017; Monti et al.2017; Velickovic et al.2018).
+Adding anisotropic message passing does not change the underlying computational graph because the same message passing function is symmetrically applied across all nodes.
+Therefore, these models still exhibit the limitations summarized in Figure1.
+
+A graph can be represented as𝒢=(𝒱,ℰ)𝒢𝒱ℰ\mathcal{G}=(\mathcal{V},\mathcal{E}), where𝒱={v1,…,vn}𝒱subscript𝑣1…subscript𝑣𝑛\mathcal{V}=\{v_{1},...,v_{n}\}is the node set andℰ⊆𝒱×𝒱ℰ𝒱𝒱\mathcal{E}\subseteq\mathcal{V}\times\mathcal{V}is the edge set. Nodes can be paired with features𝒳={𝐱v|∀v∈𝒱}𝒳conditional-setsubscript𝐱𝑣for-all𝑣𝒱\mathcal{X}=\{\mathbf{x}_{v}|\forall v\in\mathcal{V}\}, and edges can have featuresℱ={𝐟u​v|∀eu​v∈ℰ}ℱconditional-setsubscript𝐟𝑢𝑣for-allsubscript𝑒𝑢𝑣ℰ\mathcal{F}=\{\mathbf{f}_{uv}|\forall e_{uv}\in\mathcal{E}\}.
+As discussed earlier, we focus on message passing GNNs throughout this paper. We follow the definition of GNNs in(Xu et al.2019).
+The goal of a GNN is to learn meaningful node embeddings𝐡vsubscript𝐡𝑣\mathbf{h}_{v}based on an iterative aggregation of local network neighborhoods. Thek𝑘k-th iteration of message passing, or thek𝑘k-th layer of a GNN, can be written as:
+
+where𝐡v(k)superscriptsubscript𝐡𝑣𝑘\mathbf{h}_{v}^{(k)}is the node embedding afterk𝑘kiterations,𝐡v(0)=𝐱vsuperscriptsubscript𝐡𝑣0subscript𝐱𝑣\mathbf{h}_{v}^{(0)}=\mathbf{x}_{v},𝐦v(k)superscriptsubscript𝐦𝑣𝑘\mathbf{m}_{v}^{(k)}is the message embedding, and𝒩​(v)𝒩𝑣\mathcal{N}(v)is the local neighborhood ofv𝑣v. Different GNNs have varied definitions ofMsg(k)​(⋅)superscriptMsg𝑘⋅\textsc{Msg}^{(k)}(\cdot)andAgg(k)​(⋅)superscriptAgg𝑘⋅\textsc{Agg}^{(k)}(\cdot).
+For example, a GraphSAGE uses the definition (𝐖(k)superscript𝐖𝑘\mathbf{W}^{(k)},𝐔(k)superscript𝐔𝑘\mathbf{U}^{(k)}are trainable weights):
+
+The node embeddings𝐡v(K),∀v∈𝒱superscriptsubscript𝐡𝑣𝐾for-all𝑣𝒱\mathbf{h}_{v}^{(K)},\forall v\in\mathcal{V}are then used for node, edge, and graph level prediction tasks.
+
+We design ID-GNN so that it can makeanymessage passing GNN more expressive. ID-GNN is built with two important components:(1)inductive identity coloringwhere identity information is injected to each node, and(2)heterogeneous message passingwhere the identity information is utilized in message passing. Algorithm 1 provides an overview.
+
+Inductive identity coloring.
+To embed a given nodev∈𝒢𝑣𝒢v\in\mathcal{G}using aK𝐾K-layer ID-GNN, we first extract theK𝐾K-hop ego network𝒢v(K)superscriptsubscript𝒢𝑣𝐾\mathcal{G}_{v}^{(K)}ofv𝑣v. We then assign a unique coloring to the central node of the ego network𝒢v(K)superscriptsubscript𝒢𝑣𝐾\mathcal{G}_{v}^{(K)}.
+Altogether, nodes in𝒢v(K)superscriptsubscript𝒢𝑣𝐾\mathcal{G}_{v}^{(K)}can be categorized into two types throughout the embedding process: nodes with coloring and nodes without coloring.
+This coloring technique isinductivebecause even if nodes are permuted, the center node of the ego network can still be differentiated from other neighboring nodes.
+
+Heterogeneous message passing.K𝐾Krounds of message passing are then applied to all the extracted ego networks. To embed nodeu∈𝒢v(K)𝑢superscriptsubscript𝒢𝑣𝐾u\in\mathcal{G}_{v}^{(K)}, we extend Eq.1to enable heterogeneous message passing:
+
+where only𝐡v(K)superscriptsubscript𝐡𝑣𝐾\mathbf{h}_{v}^{(K)}is used as the embedding representation for nodev𝑣vafter applyingK𝐾Krounds of Eq.3.
+Different from Eq.1, two sets ofMsg(k)superscriptMsg𝑘\textsc{Msg}^{(k)}functions are used, whereMsg1(k)​(⋅)subscriptsuperscriptMsg𝑘1⋅\textsc{Msg}^{(k)}_{1}(\cdot)is applied to nodes with identity coloring, andMsg0(k)​(⋅)subscriptsuperscriptMsg𝑘0⋅\textsc{Msg}^{(k)}_{0}(\cdot)is used for node without coloring. The indicator function𝟙​[s=v]=1​if​s=v​else​01delimited-[]𝑠𝑣1if𝑠𝑣else0\mathbbm{1}[s=v]=1\text{ if }s=v\text{ else }0is used to index the selection of these functions. This way, the inductive identity coloring isencoded into the ID-GNN computational graph.
+
+A benefit of this heterogeneous message passing approach is that it isapplicable to any message passing GNN. For example, consider the following message passing scheme, which extends the definition of GNNs in Eq.3by including edge attributes𝐟s​usubscript𝐟𝑠𝑢\mathbf{f}_{su}during message passing:
+
+Input:Graph𝒢​(𝒱;ℰ)𝒢𝒱ℰ\mathcal{G}(\mathcal{V};\mathcal{E}), input node features{xv,∀v∈𝒱}subscript𝑥𝑣for-all𝑣𝒱\{x_{v},\forall v\in\mathcal{V}\}; Number of layersK𝐾K; trainable functionsMsg1(k)​(⋅)subscriptsuperscriptMsg𝑘1⋅\textsc{Msg}^{(k)}_{1}(\cdot)for nodes with identity coloring,Msg0(k)​(⋅)subscriptsuperscriptMsg𝑘0⋅\textsc{Msg}^{(k)}_{0}(\cdot)for the rest of nodes;Ego​(v,k)Ego𝑣𝑘\textsc{Ego}(v,k)extracts theK𝐾K-hop ego network centered at nodev𝑣v, indicator function𝟙​[s=v]=1​if​s=v​else​01delimited-[]𝑠𝑣1if𝑠𝑣else0\mathbbm{1}[s=v]=1\text{ if }s=v\text{ else }0Output:Node embeddings𝐡vsubscript𝐡𝑣\mathbf{h}_{v}for allv∈𝒱𝑣𝒱v\in\mathcal{V}
+
+Algorithmic complexity.
+Besides adding the identity coloring and applying two types of message passing instead of one, the computation of ID-GNN is almost identical to the widely used mini-batch version of GNNs(Hamilton, Ying, and Leskovec2017; Ying et al.2018). In our experiments, by matching the number of trainable parameters, the computation FLOPS used by ID-GNNs and mini-batch GNNs can be the same (shown in Table4).
+
+Extension to edge-level tasks.
+Here we discuss how to extend the ID-GNN framework to properly resolve existing GNN limitations in edge-level tasks (Figure1, middle). Suppose we want to predict the edge-level label for a node pairu𝑢u,v𝑣v. For ID-GNN, the prediction is made from aconditional node embedding𝐡u|vsubscript𝐡conditional𝑢𝑣\mathbf{h}_{u|v}, which is computed by assigning nodev𝑣v, rather thanu𝑢u, identity coloring in nodeu𝑢u’s computation graph, as illustrated in Figure1.
+In the case where nodev𝑣vdoes not lie withinu𝑢u’sK𝐾K-hop ego network, no identity coloring is used and ID-GNNs will still suffer from existing failure cases of GNNs. Therefore, we use deeper ID-GNNs for edge-level prediction tasks in practice.
+
+ID-GNNs are strictly more expressive than existing message passing GNNs.
+It has been shown that existing message passing GNNs have an expressive power upper bound by the 1-WL test, where the upper bound can be instantiated by the Graph Isomophism Network (GIN)(Xu et al.2019).
+
+ID-GNN version of GIN can differentiate any graph that GIN can differentiate, while being able to differentiate certain graphs that GIN fails to distinguish.
+
+By settingMsg0(k)​(⋅)=Msg1(k)​(⋅)subscriptsuperscriptMsg𝑘0⋅subscriptsuperscriptMsg𝑘1⋅\textsc{Msg}^{(k)}_{0}(\cdot)=\textsc{Msg}^{(k)}_{1}(\cdot), Eq.3becomes identical to Eq.1which trivially proves the first part. Thed𝑑d-regular graph example given in Figure1then proves the second part.
+
+ID-GNNs can count cycles.
+Proposition 1 provides an overview of the added expressive power of ID-GNNs. Here, we reveal one concrete aspect of this added expressive power,i.e., ID-GNN’s capability to count cycles.
+We observe that the ability of counting cycles is intuitive to understand; moreover, it is crucial for useful tasks such as predicting node clustering coefficient, which we elaborate in the next section.
+
+For any nodev𝑣v, there exists aK𝐾K-layer ID-GNN instantiation that can learn an embedding𝐡v(K)superscriptsubscript𝐡𝑣𝐾\mathbf{h}_{v}^{(K)}where thej𝑗j-th dimension𝐡v(K)​[j]superscriptsubscript𝐡𝑣𝐾delimited-[]𝑗\mathbf{h}_{v}^{(K)}[j]equals the number of lengthj𝑗jcycles starting and ending at nodev𝑣v, forj=1,…,K𝑗1…𝐾j=1,...,K.
+
+We prove this by showing that ID-GNNs can count paths from any node u to the identity node v. Through induction, we show that a 1-layer ID-GNN embedding𝐡u(1)superscriptsubscript𝐡𝑢1\mathbf{h}_{u}^{(1)}can count length 1 paths from u to v. Then, given aK𝐾K-layer ID-GNN embedding𝐡u(K)superscriptsubscript𝐡𝑢𝐾\mathbf{h}_{u}^{(K)}that counts paths of length1,…,K1…𝐾1,\dots,Kbetween u and v, we show theK+1𝐾1K+1-th layer of ID-GNN can accurately update𝐡v(K+1)superscriptsubscript𝐡𝑣𝐾1\mathbf{h}_{v}^{(K+1)}to account for paths of lengthK+1𝐾1K+1. Detailed proofs are provided in the Appendix.
+
+Node-level: Predicting clustering coefficient.
+Here we show that existing message passing GNNs fail to inductively predict clustering coefficients purely from graph structure, while ID-GNNs can.
+Clustering coefficient is a widely used metric that characterizes the proportion of closed triangles in a node’s 1-hop neighborhood(Watts and Strogatz1998).
+The node classification failure case in Figure1demonstrates GNNs’ inability to predict clustering coefficients, as GNNs fail to differentiate nodesv1subscript𝑣1v_{1}andv2subscript𝑣2v_{2}with clustering coefficient 1 and 0 respectively.
+By using one-hot node features, GNNs can overcome this failure mode(Hamilton, Ying, and Leskovec2017). However, in this case GNNs arememorizingthe clustering coefficients for each node, since one-hot encodings prevent generalization to unseen graphs.
+
+Based on Proposition 2, ID-GNNs can learn node embeddings𝐡v(K)superscriptsubscript𝐡𝑣𝐾\mathbf{h}_{v}^{(K)}, where𝐡v(K)​[j]superscriptsubscript𝐡𝑣𝐾delimited-[]𝑗\mathbf{h}_{v}^{(K)}[j]equals the number of lengthj𝑗jcycles starting and ending at nodev𝑣v. Given these cycle counts, we can then calculate clustering coefficientcvsubscript𝑐𝑣c_{v}of nodev𝑣v:
+
+wheredvsubscript𝑑𝑣d_{v}is the degree of nodev𝑣v. Sincecvsubscript𝑐𝑣c_{v}is a continuous function of𝐡v(K)superscriptsubscript𝐡𝑣𝐾\mathbf{h}_{v}^{(K)}, we can approximate it to an arbitraryϵitalic-ϵ\epsilonprecision with an MLP due to the universal approximation theorem(Hornik et al.1989).
+
+Edge-level: Predicting reachability or shortest path distance.
+Vanilla GNNs make edge-level predictions from pairs of node embeddings(Hamilton, Ying, and Leskovec2017). However, this type of approaches fail to
+predict reachability or shortest path distance (SPD) between node pairs.
+For example, two nodes can have the same GNN node embedding, independent of whether they are located in the same connected component.
+Although(Veličković et al.2020)shows that proper node feature initialization allows for the prediction of reachability and SPD, ID-GNNs present a general solution to this limitation through the use of conditional node embeddings.
+As discussed in “Extension to edge-level tasks”, we re-formulate edge-level prediction as conditional node-level prediction; consequently, aK𝐾K-layer ID-GNN can predict if nodeu∈𝒢𝑢𝒢u\in\mathcal{G}is reachable fromv∈𝒢𝑣𝒢v\in\mathcal{G}withinK𝐾Khops by using the conditional node embedding𝐡u|v(K)superscriptsubscript𝐡conditional𝑢𝑣𝐾\mathbf{h}_{u|v}^{(K)}via:
+
+where𝐡u|v(0)=0,∀u∈𝒢formulae-sequencesuperscriptsubscript𝐡conditional𝑢𝑣00for-all𝑢𝒢\mathbf{h}_{u|v}^{(0)}=0,\forall u\in\mathcal{G},
+and the output𝐡u|v(K)=1superscriptsubscript𝐡conditional𝑢𝑣𝐾1\mathbf{h}_{u|v}^{(K)}=1if an ID-GNN predictsu𝑢uare reachable fromv𝑣v.
+
+Graph-level: Differentiating randomd𝑑d-regular graphs.
+As is illustrated in Figure1, existing message passing GNNs cannot differentiate randomd𝑑d-regular graphs purely from graph structure, as the computation graphs for each node are identical, regardless of the number of layers.
+Here, we show that ID-GNNs can differentiate a significant proportion of randomd𝑑d-regular graphs.
+Specifically, we generate 100 non-isomorphic randomd𝑑d-regular graphs and consider 3 settings with different graph sizes (n𝑛n) and node degree (d𝑑d). We use up to lengthK𝐾Kcycle counts, which aK𝐾K-layer ID-GNN can successfully represent (shown in Proposition 2), to calculate the percentage of thesed𝑑d-regular graphs that can be differentiated.
+Results in Table1confirm that the addition of identity information can greatly help differentiated𝑑d-regular graphs.
+
+Given that:(1)mini-batch implementations of GNNs have computational overhead when extracting ego networks, which is required by ID-GNNs with heterogeneous message passing, and(2)cycle count information explains an important aspect of the added expressive power of ID-GNNs over existing GNNs, we propose ID-GNN-Fast, where we inject identity information by using cycle counts as augmented node features. Similar cycle count information is also shown to be useful in the context of graph kernels(Zhang et al.2018).
+Following the definition in Proposition 3, we use the count of cycles with length1,…,K1…𝐾1,\dots,Kstarting and ending at the nodev𝑣vas augmented node feature𝐱v+∈ℝKsuperscriptsubscript𝐱𝑣superscriptℝ𝐾\mathbf{x}_{v}^{+}\in\mathbb{R}^{K}. These additional features𝐱v+superscriptsubscript𝐱𝑣\mathbf{x}_{v}^{+}can be computed efficiently with sparse matrix multiplication via𝐱v+​[k]=Diag​(Ak)​[v]superscriptsubscript𝐱𝑣delimited-[]𝑘Diagsuperscript𝐴𝑘delimited-[]𝑣\mathbf{x}_{v}^{+}[k]=\text{Diag}(A^{k})[v], whereA𝐴Ais the adjacency matrix. We then update the input node attributes for all nodes by concatenating this augmented feature𝐱v=Concat​(𝐱v,𝐱v+)subscript𝐱𝑣Concatsubscript𝐱𝑣superscriptsubscript𝐱𝑣\mathbf{x}_{v}=\textsc{Concat}(\mathbf{x}_{v},\mathbf{x}_{v}^{+}).
+
+Datasets.
+We perform experiments over 8 different datasets.
+We consider the synthetic graph datasets(1)ScaleFree(Holme and Kim2002)and(2)SmallWorld(Watts and Strogatz1998), each containing 256 graphs, with average degree of444and average clustering coefficient in the range[0,0.5]00.5[0,0.5].
+For real-world datasets we explore 3 protein datasets:(3)ENZYMES(Borgwardt et al.2005)with 600 graphs,(4)PROTEINS(Schomburg et al.2004)with 1113 graphs, and(5)BZR(Sutherland, O’brien, and Weaver2003)with 405 graphs. We also consider citation networks including(6)Coraand(7)CiteSeer(Sen et al.2008), and a large-scale molecule dataset(8)ogbg-molhiv(Hu et al.2020)with 41K graphs.
+
+Tasks.
+We evaluate ID-GNNs over two task categories. First, we consider challenging graph property prediction tasks:(1)classifying nodes by clustering coefficients,(2)classifying pairs of nodes by their shortest path distances, and(3)classifying random graphs by their average clustering coefficients. We bin over continuous clustering coefficients to make task (1) and (3) 10-way classification tasks and threshold the shortest path distance to make task (2) a 5-way classification task.
+We also consider more common tasks with real-world labels, including(4)node classification,(5)link prediction, and(6)graph classification.
+For theogbg-molhivdataset we use provided splits, while for all the other tasks, we use a random 80/20% train/val split and average results over 3 random splits.
+Validation accuracy (multi-way classification) or ROC AUC (binary classification) in the final epoch is reported.
+
+Models.
+We present a standardized framework for fairly comparing ID-GNNs with existing GNNs.
+We use 4 widely adopted GNN models as base models: GAT(Velickovic et al.2018), GCN(Kipf and Welling2017), GIN(Xu et al.2019), and GraphSAGE(Hamilton, Ying, and Leskovec2017).
+We then transform each GNN model to its ID-GNN variants, ID-GNN-Full (based on heterogeneous message passing) and ID-GNN-Fast, holding all the other hyperparameters fixed. To further ensure fairness, we adjust layer widths, so that all the models match the number of trainable parameters of a standard GCN model (i.e., match computational budget).
+In summary, we run 12 models for each experimental setup, including 4 types of GNN architectures, each with 3 versions.
+
+We use 3-layer GNNs for node and graph level tasks, and 5-layer GNNs for edge level tasks, where GCNs with 256-dim hidden units are used to set the computational budget for all 12 model variants. For ID-GNNs-Full, each layer has 2 sets of weights, thus each layer has fewer number of hidden units; for ID-GNNs-Fast, 10-dim augmented cycle counts features are used.
+We use ReLU activation and Batch Normalization for all the models.
+We use Adam optimizer with learning rate 0.01. Due to the different nature of these tasks, tasks (1)(3)(6) excluding theogbg-molhivdataset, are trained for 1000 epochs, while the rest are trained for 100 epochs.
+For node-level tasks, GNN / ID-GNN node embeddings are directly used for prediction; for edge-level tasks, ID-GNNs-Full make predictions with conditional node embeddings, while GNNs and ID-GNNs-Fast make predictions by concatenating pairs of node embeddings and then passing the result through a 256-dim MLP; for graph-level tasks, predictions are based on a global sum pooling over node embeddings.
+
+Overall, these comprehensive and consistent experimental settings reveal the general improvement of ID-GNNs compared with existing GNNs.
+
+Node clustering coefficient prediction.
+In Table2we observe that across all models and datasets, both ID-GNN formulations perform at the level of or significantly outperform GNN counterparts, with an average absolute performance gain of 36.8% between the best ID-GNN and best GNN. In each dataset, both ID-GNN methods perform with near 100% accuracy for at least one GNN architecture.
+ID-GNN-Fast shows the most consistent improvements across models with greatest improvement in GraphSAGE. These results align with the previous discussion of using cycle counts alone to learn clustering coefficients. We defer discussion until later on ID-GNN-Full sometimes showing minimal improvement, to present a general understanding of this behavior.
+
+Shortest path distance prediction.
+In the pairwise shortest path prediction task, ID-GNNs-Full outperform GNNs by an average of 39.9%. Table2reveals that ID-GNN-Full performs with 100% or near 100% accuracy under all GNN architectures, across all datasets. This observation, along with the comparatively poor performance of ID-GNNs-Fast and GNNs, confirms the previously discussed conclusion that traditional edge-level predictions, through pairwise node embeddings, fail to accurately make edge-level predictions.
+
+Average clustering coefficient prediction for random graphs.
+In Table2, we observe that adding identity information results in a 55% and 42.3% increase in best performance overScaleFreeandSmallWorldgraphs respectively. ID-GNN-Fast shows the most consistent improvement (56.9% avg. model gain),
+which aligns with previous intuitions about the utility of cycle count information in predicting clustering coefficients and differentiating random graphs.
+
+Node classification.
+In node classification we see smaller but still significant improvements when using ID-GNNs. Table3shows an overall 1% and 1.6% improvement forCoraandCiteSeerrespectively. In all cases except for GIN and GraphSAGE onCora, adding identity information improves performance.
+In regards to the relatively small improvements, we hypothesize that the richness of node features (over 1000-dim for both datasets) greatly dilutes the importance of graph structure in these tasks, and thus the added expressiveness from identity information is diminished.
+
+Link prediction.
+As shown in Table3, we observe consistent improvement in ID-GNNs over GNNs, with 9.2% and 20.6% ROC AUC improvement on synthetic and real-world graphs respectively. Moreover, we observe that ID-GNN-Full nearly always performs the best, aligning with previous edge-level task results in Table2and intuitions on the importance of re-formulating edge-level tasks as conditional node prediction tasks. We observe that performance improves less for random graphs, which we hypothesize is due to the randomness within these synthetic graphs causing the distinction between positive and negative edges to be much more vague.
+
+Graph classification.
+Across each dataset, we observe that the best ID-GNN consistently outperforms the best GNN of the same computational budget.
+However, model to model improvement is less clear. For theENZYMESdataset, ID-GNN-Fast shows strong improvements under each GNN architecture, with gains as large as 10% in accuracy for the GraphSAGE model. InPROTEINandBZR, ID-GNN-Full shows improvements for each GNN model (except GIN onBZR), with greatest performance increases in GCN and GAT (avg. 3.6% and 3.0% respectively).
+
+We compare the runtime complexity (excluding mini-batch loading time) of ID-GNNs vs. existing GNNs, where we hold the computational budget constant across all models. Table4reveals that when considering the forward and backward pass, ID-GNN-Full runs 3.8x slower than its GNN equivalent but has an equivalent runtime complexity to the mini-batch implementation of GNN, while ID-GNN-Fast runs with essentially zero overhead over existing GNN implementations.
+
+Overall, ID-GNN-Full and ID-GNN-Fast demonstrate significant improvements over their message passing GNN counterparts, of the same computational budget, on a variety of tasks.
+In all tasks, the best ID-GNNs outperforms the best GNNs; moreover, out of 160 model-task combinations, ID-GNNs fail to improve accuracy in fewer than 10 cases. For the rare cases where there is no improvement from ID-GNN-Full, we suspect that the modelunderfitssince we control the complexity of models: given that ID-GNN-Full has two sets of weights (heterogeneous message passing), fewer weights are used for each message passing.
+For verification, if we double the computational budget, we observe that ID-GNN versions again outperform GNN counterparts.
+
+We provide additional experimental comparisons against other expressive graph networks in both edge and graph-level tasks. For edge-level task, we further compare with P-GNN(You, Ying, and Leskovec2019)over theENZYMESandPROTEINSdatasets using the protocol introduced previously. For graph-level comparison, we include experimental results over 3 datasets:MUTAGwith 182 graphs(Debnath et al.1991),PTCwith 344 graphs(Helma and Kramer2003), andPROTEINS. We follow PPGN’s(Maron et al.2019a)10-fold 90/10 data splits and compare against 5 other expressive graph networks. We report numbers in the corresponding papers, and report the best ID-GNNs out of the 4 variants.
+
+Link prediction.
+We compare against P-GNNs on 2 link prediction datasets. As shown in the Table5, we observe significant improvements using ID-GNNs compared to both its GNN counterpart and P-GNNs.
+These results both demonstrate ID-GNNs’ competitive performance as a general graph learning method against a task-specific model, while also highlighting ID-GNN’s improved ability to incorporate node-features compared with P-GNNs.
+
+Graph classification.
+We compare ID-GNNs against several other more powerful graph networks in the task of graph classification. Table6demonstrates the strong performance of ID-GNNs. ID-GNNs outperform other graph networks on theMUTAGandPROTEINSdatasets; Although ID-GNNs performance then drops on thePTCdataset, they are still comparable to two out of the four powerful graph models. These strong results further demonstrate the ability of ID-GNN to outperform not only message passing GNNs, but also other powerful, task specific graph networks across a range of tasks.
+
+We have proposed ID-GNNs as a general and powerful extension to existing GNNs with rich theoretical and experimental results.
+Specifically, ID-GNNs have expressive power beyond the 1-WL test. When runtime efficiency is the primary concern, we also present a feature augmented version of ID-GNN that maintains theoretical guarantees and empirical success of heterogeneous message passing, while only requiring one-time feature pre-processing. We recommend that this cycle-count feature augmentation be the new go-to node feature initialization when additional node attributes are not available. Additionally, as direct extensions to message passing GNNs, ID-GNNs can be easily implemented and extended via existing code platform. Overall, ID-GNNs outperform corresponding message passing GNNs, while both maintaining the attractive proprieties of message passing GNNs and demonstrating competitive performance compared with other powerful/expressive graph networks. We hope ID-GNNs’ added expressive power and proven practical applicability can enable exciting new applications and further development of message passing GNNs.
+
+GNNs represent a promising family of models for analyzing and understanding relational data. A broad range of application domains, such as network fraud detection(Akoglu, Chandy, and Faloutsos2013; Kumar, Cheng, and Leskovec2017; Akoglu and Faloutsos2013), molecular drug structure discovery(You et al.2018a,b; Jin, Barzilay, and Jaakkola2018), recommender systems(Ying et al.2018; You et al.2019a), and network analysis(Kumar, Cheng, and Leskovec2017; Morris et al.2019; Fan et al.2019; Ying et al.2019)stand to be greatly impacted by the use and development of GNNs.
+As a direct extension of existing message passing GNNs, ID-GNNs represent a simple but powerful transformation to GNNs that re-frames the discussion on GNN expressive power and thus their performance in impactful problem domains. In comparison to other models that have expressive power beyond 1-WL tests,
+ID-GNNs are easy to implement with existing graph learning packages; therefore, ID-GNNs can be easily used as extensions of existing GNN models for tackling important real-world tasks, as well as themselves extended and further explored in the research space.
+
+The simplicity of ID-GNNs presents great promise for further exploration into the expressiveness of GNNs. In particular, we believe that our work motivates further research into heterogeneous message passing and coloring schemes, as well as generic, but powerful forms of feature augmentation. By further increasing the expressiveness of message passing GNNs, we hopefully enable new, important tasks to be solved across a wide range of disciplines or significant improvement on previously defined and widely adopted GNN models. Through ease of use and strong preliminary results, we believe that our work opens the doors for new explorations into the study of graphs and graph based tasks, with the potential for great improvement in existing GNN models.
+
+We gratefully acknowledge the support of
+DARPA under Nos. FA865018C7880 (ASED), N660011924033 (MCS);
+ARO under Nos. W911NF-16-1-0342 (MURI), W911NF-16-1-0171 (DURIP);
+NSF under Nos. OAC-1835598 (CINES), OAC-1934578 (HDR), CCF-1918940 (Expeditions), IIS-2030477 (RAPID);
+Stanford Data Science Initiative,
+Wu Tsai Neurosciences Institute,
+Chan Zuckerberg Biohub,
+Amazon, Boeing, JPMorgan Chase, Docomo, Hitachi, JD.com, KDDI, NVIDIA, Dell.
+J. L. is a Chan Zuckerberg Biohub investigator.
+Jiaxuan You is supported by JPMorgan Chase PhD Fellowship and Baidu Scholarship.
+Rex Ying is supported by Baidu Scholarship.
+
+Consider an arbitrary nodev𝑣vin a graphG=(V,E)𝐺𝑉𝐸G=(V,E)for which we want to compute the embedding under ID-GNN. Without loss of generality assume thatxu=[1],∀u∈Vformulae-sequencesubscript𝑥𝑢delimited-[]1for-all𝑢𝑉x_{u}=[1],\forall u\in V.
+Additionally, letMsg0(k)​(⋅)subscriptsuperscriptMsg𝑘0⋅\textsc{Msg}^{(k)}_{0}(\cdot),Msg1(k)​(⋅)subscriptsuperscriptMsg𝑘1⋅\textsc{Msg}^{(k)}_{1}(\cdot), andAgg(k)​(⋅)superscriptAgg𝑘⋅\textsc{Agg}^{(k)}(\cdot),
+from main paper Eq. 3 (the general formulation for the k-th layer of heterogeneous message passing), be defined as follows:
+
+whereW0k,b0ksuperscriptsubscript𝑊0𝑘subscriptsuperscript𝑏𝑘0W_{0}^{k},b^{k}_{0}are trainable weights for nodes without identity coloring, andW1k,b1ksuperscriptsubscript𝑊1𝑘subscriptsuperscript𝑏𝑘1W_{1}^{k},b^{k}_{1}are for nodes with identity coloring. Assume the following weight matrix assignments for different layers k:
+
+k = 1:LetW01=[0]superscriptsubscript𝑊01delimited-[]0W_{0}^{1}=[0](i.e the 0 matrix),b10=[0]subscriptsuperscript𝑏01delimited-[]0b^{0}_{1}=[0],W11=[0]superscriptsubscript𝑊11delimited-[]0W_{1}^{1}=[0], andb11=[1]subscriptsuperscript𝑏11delimited-[]1b^{1}_{1}=[1].
+
+k =𝟐,…,𝐊2…𝐊\mathbf{2,\dots,K}:LetW0k=W1k=[0,I]T∈ℝk×(k−1)superscriptsubscript𝑊0𝑘superscriptsubscript𝑊1𝑘superscript0𝐼𝑇superscriptℝ𝑘𝑘1W_{0}^{k}=W_{1}^{k}=[0,I]^{T}\in\mathbb{R}^{k\times(k-1)}with identity matrixI∈ℝ(k−1)×(k−1)𝐼superscriptℝ𝑘1𝑘1I\in\mathbb{R}^{(k-1)\times(k-1)},b0k=[0,…,0]T∈ℝksubscriptsuperscript𝑏𝑘0superscript0…0𝑇superscriptℝ𝑘b^{k}_{0}=[0,...,0]^{T}\in\mathbb{R}^{k}, andb1k=[1,0,…,0]T∈ℝksubscriptsuperscript𝑏𝑘1superscript10…0𝑇superscriptℝ𝑘b^{k}_{1}=[1,0,...,0]^{T}\in\mathbb{R}^{k}.
+
+We will first prove Lemma 1 by induction.
+
+Lemma 1:After n-layers of heterogeneous message passing w/r to the identity colored nodev𝑣v, the embeddinghun∈Rn,∀u∈Vformulae-sequencesuperscriptsubscriptℎ𝑢𝑛superscript𝑅𝑛for-all𝑢𝑉h_{u}^{n}\in R^{n},\forall u\in Vis such thathun​[j]=superscriptsubscriptℎ𝑢𝑛delimited-[]𝑗absenth_{u}^{n}[j]=the number of paths of length (j𝑗j) starting at nodeu𝑢uand ending at the identity nodev𝑣vforj=1,…,n𝑗1…𝑛j=1,...,n.
+
+Proof of Lemma 1:
+
+Base case:We consider the result after 1 layer of message passing. For an arbitrary node u, we see that:
+
+where the indicator function𝟙​[w=v]=11delimited-[]𝑤𝑣1\mathbbm{1}[w=v]=1ifw=v𝑤𝑣w=velse 0 is used to reflect node coloring. We see thathu1​[1]=subscriptsuperscriptℎ1𝑢delimited-[]1absenth^{1}_{u}[1]=exactly the number of paths of length 1 from u to the identity node v.
+
+Inductive Hypothesis:We assume that after k-layers of heterogeneous message passing the embeddinghuk∈Rk,∀u∈Vformulae-sequencesuperscriptsubscriptℎ𝑢𝑘superscript𝑅𝑘for-all𝑢𝑉h_{u}^{k}\in R^{k},\forall u\in Vis such thathuk​[j]=superscriptsubscriptℎ𝑢𝑘delimited-[]𝑗absenth_{u}^{k}[j]=the number of paths of length j starting at nodeu𝑢uand ending at the identity nodev𝑣vforj=1,…,k𝑗1…𝑘j=1,...,k. We will prove that after one more layer of message passing or the(k+1)𝑘1(k+1)th layer of ID-GNN the desired property still holds for the updated embeddingshuk+1∈Rk+1,∀u∈Vformulae-sequencesuperscriptsubscriptℎ𝑢𝑘1superscript𝑅𝑘1for-all𝑢𝑉h_{u}^{k+1}\in R^{k+1},\forall u\in V. To do so we consider the update for an arbitrary nodeu𝑢u:
+
+We see thathuk+1​[1]=superscriptsubscriptℎ𝑢𝑘1delimited-[]1absenth_{u}^{k+1}[1]=the number of length 1 paths to the identity node v, and forj=2,…,k+1→huk+1​[j]=∑w∈N​(u)hwk​[j−1]formulae-sequence𝑗2…→𝑘1superscriptsubscriptℎ𝑢𝑘1delimited-[]𝑗subscript𝑤𝑁𝑢superscriptsubscriptℎ𝑤𝑘delimited-[]𝑗1j=2,...,k+1\rightarrow h_{u}^{k+1}[j]=\sum_{w\in N(u)}h_{w}^{k}[j-1], which by our inductive hypothesis is exactly the number of paths of lengthj𝑗jfrom node u to v. To see this, we notice that for the node u, we sum up all of the paths of lengthj−1𝑗1j-1from the neighboring nodes of u to the destination node v in order to get the number of paths of length j from u to v. Moreover, we see that each path of lengthj−1𝑗1j-1is now 1 step longer after an extra layer of message passing giving the desired paths of lengthj𝑗j. We have thus shown that afterk+1𝑘1k+1layers of message passing the embeddinghuk+1superscriptsubscriptℎ𝑢𝑘1h_{u}^{k+1}has the desired properties completing induction.
+
+Proposition 2 directly follows from the result of Lemma 1. Namely, if we choose the identity nodev𝑣vitself, by Lemma 1 we can learn an embedding such thathvksuperscriptsubscriptℎ𝑣𝑘h_{v}^{k}satisfieshvk​[j]=superscriptsubscriptℎ𝑣𝑘delimited-[]𝑗absenth_{v}^{k}[j]=the number of length j paths fromv𝑣vtov𝑣v, or equivalently the number of cycles starting and ending at nodev𝑣v, forj=1,…,k𝑗1…𝑘j=1,\dots,k.
+
+Here we discuss the potential memory consumption overhead of ID-GNNs compared with mini-batch GNNs.
+In ID-GNN, we adopted GraphSAGE(Hamilton, Ying, and Leskovec2017)style of mini-batch GNN implementation, where disjoint extracted ego-nets are fed into a GNN. Given that we control the computational complexity, ID-GNN-Full has no memory overhead compared with GraphSAGE-style mini-batch GNN. This argument is supported by Table 4 (run-time analysis) in the main manuscript as well.
+
+Mini-batch GNNs can be made more memory efficient by leveraging overlap within the extracted ego-nets; consequently, the embeddings of these nodes only need to be computed once. Note that while this approach saves the embedding computation of GNNs, it increases the time for processing mini-batches, since nodes from different ego-nets need to be aligned and deduplicated. Comparing the memory usage of ID-GNNs with this memory-efficient mini-batch GNN, the increase in memory usage is moderate. Comparison overCiteSeerreveals that a 3-layer ID-GNN takes 34%, 79% and 162% more memory under batch sizes 16, 32 and 64. Moreover, since mini-batch GNNs are often used for graphs larger thanCiteSeer, where the percentage of common nodes between ego-nets is likely small, the overhead of ID-GNN’s memory consumption will be even lower.
+
+[图片: images\image_2.png]
+
+[图片: images\image_3.png]
+

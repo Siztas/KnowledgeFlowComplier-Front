@@ -1,0 +1,220 @@
+标题：On the Computational Benefit of Multimodal Learning
+
+Human perception inherently operates in a multimodal manner. Similarly, as machines interpret the empirical world, their learning processes ought to be multimodal. The recent, remarkable successes in empirical multimodal learning underscore the significance of understanding this paradigm. Yet, a solid theoretical foundation for multimodal learning has eluded the field for some time. While a recent study by[13]has shown the superior sample complexity of multimodal learning compared to its unimodal counterpart, another basic question remains: does multimodal learning also offer computational advantages over unimodal learning? This work initiates a study on the computational benefit of multimodal learning. We demonstrate that, under certain conditions, multimodal learning can outpace unimodal learning exponentially in terms of computation. Specifically, we present a learning task that is NP-hard for unimodal learning but is solvable in polynomial time by a multimodal algorithm. Our construction is based on a novel modification to the intersection of two half-spaces
+problem.
+
+At the heart of human perception lies multimodality. This capability enables us to perceive and interrelate different facets of the same empirical object. It’s particularly important during the infantile stage of human development, where it helps unify disparate symbols, fostering comprehensive cognition as a foundation for adulthood. The analogy of raising a child in a ”room of text” alone highlights the limitations of a unimodal approach; it’s bound to be counterproductive.
+
+In the realm of machine learning, multimodality plays a role analogous to its significance in human cognition. Here, we view machine learning as the machine’s process of perception. Multimodal learning entails accumulating vast amounts of training data across various modalities and subsequently deploying the trained model to handle new unimodal tasks. This learning progression mirrors the transition from infancy to adulthood in humans. Empirical studies have consistently shown that models trained using multiple modalities often surpass finely-tuned unimodal models, even when evaluated on new unimodal data.
+
+In spite of notable empirical successes, like Gato[17]and GPT-4[15], the theoretical explanations of multimodal learning remain relatively underexplored. Thus, establishing a solid theoretical foundation becomes imperative.
+
+A recent study by[13]set the stage for a broader understanding of the statistical advantages of multimodal learning. The research showed that multimodal learning achieves superior generalization bounds compared to unimodal learning, especially when the data exhibits both connection and heterogeneity. However, the question arose: does multimodal learning also present computational advantages?
+
+Our work provides an affirmative answer. We show a computational separation between multimodal and unimodal learning. Specifically, we introduce a learning task, rooted in the intersection of two half-spaces problem, which poses an NP-hard challenge for any unimodal learning algorithm. Yet, this very task yields to a polynomial solution under a multimodal learning paradigm. This dichotomy demonstrates the potential exponential computational advantage of multimodal learning over its unimodal counterpart. Coupled with the statistical insights from[13], our findings further illuminate the vast potential of multimodal learning.
+
+Theoretical Multimodal Learning: despite the empirical success of multimodal learning, a cohesive theoretical foundation was long missing in this area. Most existing theoretical findings are bound by specific assumptions and contexts. For instance, studies such as[23,1,7,19]navigate multimodal learning within a multi-view framework, operating under the assumption that individual modalities are, in isolation, adequate for predictions.[20,11]delve into algorithms pivoting on information-theoretical relationships across modalities.[18]consider the specific problem of the benefit of contrastive loss in multimodal learning with a linear
+data-generating model.[9]studies the generalization ability of multimodal learning in estimating the latent space representation.
+
+A recent work[13]proposes a broad-based theory on the statistical guarantee of multimodal learning. They prove that multimodal learning admits anO​(m)𝑂𝑚O(\sqrt{m})improvement in generalization error over unimodal learning. This is achieved by dissecting the learning of the composition of two hypotheses, where the sum of complexities of the hypotheses is markedly smaller than that of their composition. Additionally, they pinpoint connection and heterogeneity amidst modalities as the two pivotal elements propelling these statistical advantages of multimodal learning.
+
+Empirical Multimodal Learning: applications of multimodal learning can be traced back to the last century, aiming at combining vision and audio data to improve the performance of speech recognition[22,14]. As the field evolved, multimodal learning carved a niche in multimedia, enhancing capabilities in indexing and search functionalities[6,12].
+
+Recently, there is a trend in applying multimodal learning in deep learning practices, including modality generation[3,8,16]and large-scale generalist models[17,15]. A consistently observed empirical phenomenon is that a multimodal model is able to outperform a finely-tuned unimodal model, even on unimodal population data.
+
+In this section, we delineate the setup of multimodal learning and essential background on the intersection of two half-spaces problem.
+
+In this paper, we restrict our focus to the fundamental, yet non-trivial, scenario of two modalities for a clear exposition, adopting the setup of[13]. Formally, the multimodal learning classification framework encompasses two modalities, denoted as𝒳,𝒴⊂ℝn𝒳𝒴superscriptℝ𝑛\mathcal{X},\mathcal{Y}\subset\mathbb{R}^{n}, and a label space𝒵={±}𝒵plus-or-minus\mathcal{Z}=\{\pm\}. Consequently, every data point can be represented as a tuple(x,y,z)𝑥𝑦𝑧(x,y,z).
+
+Given a hypothesis classℋℋ\mathcal{H}and a training dataset(X,Y,Z)𝑋𝑌𝑍(X,Y,Z)withm𝑚mdata points(xi,yi,zi)subscript𝑥𝑖subscript𝑦𝑖subscript𝑧𝑖(x_{i},y_{i},z_{i}), our aim in (proper) learning from(X,Y,Z)𝑋𝑌𝑍(X,Y,Z)is to output a hypothesish∈ℋℎℋh\in\mathcal{H}, that minimizes the empirical risk:
+
+When each data point(x,y,z)𝑥𝑦𝑧(x,y,z)adheres to a specific data distributionD𝐷Dover(𝒳,𝒴,𝒵)𝒳𝒴𝒵(\mathcal{X},\mathcal{Y},\mathcal{Z}), the goal of (properly) PAC-learning(X,Y,Z)𝑋𝑌𝑍(X,Y,Z)is to output a hypothesish∈ℋℎℋh\in\mathcal{H}, such that the population risk
+
+is small with high probability. In addition, we mandate a bijective mapping betweenx,y𝑥𝑦x,yfor any potential data point(x,y,z)𝑥𝑦𝑧(x,y,z).
+
+For brevity, we occasionally write(𝒳,𝒴,𝒵)𝒳𝒴𝒵(\mathcal{X},\mathcal{Y},\mathcal{Z})for short to denote the learning problem, when it is clear from the context. The unimodal learning problems(𝒳,𝒵)𝒳𝒵(\mathcal{X},\mathcal{Z})and(𝒴,𝒵)𝒴𝒵(\mathcal{Y},\mathcal{Z})can be defined in a similar way, in which the labely𝑦yorx𝑥xis masked. In learning(𝒳,𝒵)𝒳𝒵(\mathcal{X},\mathcal{Z}), we are given a hypothesis classℋℋ\mathcal{H}and a set(X,Z)𝑋𝑍(X,Z)of training data withm𝑚mdata points(xi,zi)subscript𝑥𝑖subscript𝑧𝑖(x_{i},z_{i}). The empirical risk and the population risk are defined as follows respectively.
+
+In our quest to demonstrate a computational separation between multimodal and unimodal learning, we sought to architect a specific learning challenge that presents as NP-hard for unimodal learning, but for which an efficient multimodal solution exists.
+
+A candidate of such problem is the ’intersection of two half-spaces,’ formally defined below:
+
+An instance of𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}is a set of points inℝnsuperscriptℝ𝑛\mathbb{R}^{n}each labeled either ‘+’ or ‘-’ and the goal is to find an intersection of two half-spaces which correctly classifies the maximum number of points, where a ‘+’ point is classified correctly if it lies inside the intersection and a ‘-’ point is classified correctly if it lies outside of it.
+
+Previous work has shown that PAC-learning this intersection is inherently NP-hard, even in the realizable setting, encapsulated in the following result:
+
+Letℓℓ\ellbe any fixed integer andϵ>0italic-ϵ0\epsilon>0be an
+arbitrarily small constant. Then, given a set of labeled points
+inℝnsuperscriptℝ𝑛\mathbb{R}^{n}with a guarantee that there is an intersection of two half-spaces that classifies all the points correctly, there is no polynomial time algorithm to find a functionf𝑓fof up toℓℓ\elllinear threshold functions that classifies12+ϵ12italic-ϵ\frac{1}{2}+\epsilonfraction of points correctly, unless NP = RP.
+
+A slightly weaker version of the above result which will be of use is the following:
+
+Letϵ>0italic-ϵ0\epsilon>0be an arbitrarily small constant. Then, given a set of labeled points inℝnsuperscriptℝ𝑛\mathbb{R}^{n}with a guarantee that there is an intersection of two half-spaces that classifies all the points correctly, there is no polynomial time algorithm to find a functionf𝑓fof an intersection of two half-spaces that classifies12+ϵ12italic-ϵ\frac{1}{2}+\epsilonfraction of points correctly, unless NP = RP.
+
+It’s clear Proposition3is a direct consequence of Theorem2, given that the intersection of two half-spaces naturally translates toℓℓ\elllinear threshold functions withℓ=2ℓ2\ell=2. Through out this paper we will only consider the case of proper learning with our hypothesis class including only intersections of two half-spaces.
+
+To demonstrate the computational benefit of multimodal learning, we present an instance in which both unimodal learning problems(𝒳,𝒵)𝒳𝒵(\mathcal{X},\mathcal{Z})and(𝒴,𝒵)𝒴𝒵(\mathcal{Y},\mathcal{Z})are NP-hard, while the multimodal learning problem(𝒳,𝒴,𝒵)𝒳𝒴𝒵(\mathcal{X},\mathcal{Y},\mathcal{Z})can be solved efficiently. In particular, we require the existence of a bijective mappingf:𝒳→𝒴:𝑓→𝒳𝒴f:\mathcal{X}\to\mathcal{Y}satisfyingy=f​(x)𝑦𝑓𝑥y=f(x)for any data point(x,y,z)∈(𝒳,𝒴,𝒵)𝑥𝑦𝑧𝒳𝒴𝒵(x,y,z)\in(\mathcal{X},\mathcal{Y},\mathcal{Z}), so that the hardness result is purely computational. The task of constructing such an instance can be decomposed into three steps
+
+We start by setting(𝒳,𝒵)𝒳𝒵(\mathcal{X},\mathcal{Z})as a NP-hard problem, in this case, an instance of𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}.
+
+Based on(𝒳,𝒵)𝒳𝒵(\mathcal{X},\mathcal{Z}), we construct a bijective mapping betweenx,y𝑥𝑦x,y, to obtain a new NP-hard problem(𝒴,𝒵)𝒴𝒵(\mathcal{Y},\mathcal{Z})by preserving the𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}structure.
+
+The bijective mapping should be designed carefully, such that the multimodal problem(𝒳,𝒴,𝒵)𝒳𝒴𝒵(\mathcal{X},\mathcal{Y},\mathcal{Z})can be solved efficiently.
+
+Below we describe the construction of the instance and the main idea behind. A detailed proof is provided in the next section.
+
+Step 1:We set one of the unimodal learning problem, say(𝒳,𝒵)𝒳𝒵(\mathcal{X},\mathcal{Z}), as an instance of𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}. We denote any problem of𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}byH1∩H2subscript𝐻1subscript𝐻2H_{1}\cap H_{2}with halfspacesH1,H2subscript𝐻1subscript𝐻2H_{1},H_{2}inℝnsuperscriptℝ𝑛\mathbb{R}^{n}, where eachHi=(x|ri⊤​x≤ci)subscript𝐻𝑖conditional𝑥superscriptsubscript𝑟𝑖top𝑥subscript𝑐𝑖H_{i}=(x|r_{i}^{\top}x\leq c_{i})is determined by the unit vectorrisubscript𝑟𝑖r_{i}andci∈ℝsubscript𝑐𝑖ℝc_{i}\in\mathbb{R}.
+
+Step 2:A critical observation is that, any𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}problemH1∩H2subscript𝐻1subscript𝐻2H_{1}\cap H_{2}can be transformed into a new𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}problem by applying a coordinate change, under which eachx𝑥xis mapped to a new point with the correspondingz𝑧zremaining the same. DenoteQ∈ℝn×n𝑄superscriptℝ𝑛𝑛Q\in\mathbb{R}^{n\times n}as any orthogonal matrix, we obtainH^1∩H^2subscript^𝐻1subscript^𝐻2\hat{H}_{1}\cap\hat{H}_{2}whereH^i=(x|r^i⊤​x≤ci)subscript^𝐻𝑖conditional𝑥superscriptsubscript^𝑟𝑖top𝑥subscript𝑐𝑖\hat{H}_{i}=(x|\hat{r}_{i}^{\top}x\leq c_{i})by settingr^i=Q​risubscript^𝑟𝑖𝑄subscript𝑟𝑖\hat{r}_{i}=Qr_{i}. Lety=Q​x𝑦𝑄𝑥y=Qx, we create a new NP-hard unimodal problem(𝒴,𝒵)𝒴𝒵(\mathcal{Y},\mathcal{Z}), asQ𝑄Qdefines a bijective mapping from the set of all𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}problems to itself.
+
+Step 3:It remains unclear how the multimodal problem(𝒳,𝒴,𝒵)𝒳𝒴𝒵(\mathcal{X},\mathcal{Y},\mathcal{Z})can be easy to learn. Our strategy is to design a specialQ𝑄Qfor eachH1∩H2subscript𝐻1subscript𝐻2H_{1}\cap H_{2}, by encoding the information ofH1∩H2subscript𝐻1subscript𝐻2H_{1}\cap H_{2}into the transformationQ𝑄Q. Ideally, withn𝑛nlinearly-independentxisubscript𝑥𝑖x_{i}, we can recover the matrixQ𝑄Qby basic linear algebra. With the exact values ofr1,r2subscript𝑟1subscript𝑟2r_{1},r_{2}in hand, we getc1,c2subscript𝑐1subscript𝑐2c_{1},c_{2}by listing the distances from allx𝑥xto the hyperplaneri⊤​x=0superscriptsubscript𝑟𝑖top𝑥0r_{i}^{\top}x=0inO​(m​n2)𝑂𝑚superscript𝑛2O(mn^{2})time. The obtained classifier achieves zero loss on the training data.
+
+However, it’s challenging to directly encode the vectorsr1,r2subscript𝑟1subscript𝑟2r_{1},r_{2}into then×n𝑛𝑛n\times nmatrixQ𝑄Q. There are two main obstacles. First, how to encode the information ofr1,r2subscript𝑟1subscript𝑟2r_{1},r_{2}is unclear:Q𝑄Qis under the constraint of an orthogonal matrix, which might be violated by simply fillingr1,r2subscript𝑟1subscript𝑟2r_{1},r_{2}intoQ𝑄Q. Using more complicated techniques of encoding may bring other concerns such as the existence of a closed-form representation or whether decoding can be done efficiently. Second, the quality of such encoding is questionable: even if we find a way to encoder1,r2subscript𝑟1subscript𝑟2r_{1},r_{2}intoQ𝑄Q, we still need to make sure(𝒴,𝒵)𝒴𝒵(\mathcal{Y},\mathcal{Z})exhausts the set of all possible𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}instances. Otherwise although each(𝒴,𝒵)𝒴𝒵(\mathcal{Y},\mathcal{Z})problem is an𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}instance, the set of all possible(𝒴,𝒵)𝒴𝒵(\mathcal{Y},\mathcal{Z})problems is a merely a subset of𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}, preventing us from directly applying the NP-hardness result.
+
+Fortunately, we have a very simple remedy: enlarging the dimensionn𝑛nby twice, then using the firstn𝑛ncoordinates for𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}while the latter2​n2𝑛2ncoordinates to encode the information of𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}. Roughly speaking, we create2​n2𝑛2nnull coordinates with no effect on the𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}problem, while they carry the information of𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}which can only be retrived by knowing bothx,y𝑥𝑦x,y. In particular, for any𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}problemH1∩H2subscript𝐻1subscript𝐻2H_{1}\cap H_{2}, we setQ𝑄Qas
+
+The vectorsr1,r2subscript𝑟1subscript𝑟2r_{1},r_{2}are simply flattened and set as the first column of the second block. Since the norm of this column is 1,Q𝑄Qcan be easily made feasible. The identity matrixInsubscript𝐼𝑛I_{n}ensures(𝒴,𝒵)𝒴𝒵(\mathcal{Y},\mathcal{Z})exhausts the set of all possible𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}instances. The main result of this paper is given by the following theorem.
+
+There exists a multimodal learning problem(𝒳,𝒴,𝒵)𝒳𝒴𝒵(\mathcal{X},\mathcal{Y},\mathcal{Z})which is PAC-learnable in polynomial time, while both unimodal learning problems(𝒳,𝒵)𝒳𝒵(\mathcal{X},\mathcal{Z}),(𝒴,𝒵)𝒴𝒵(\mathcal{Y},\mathcal{Z})are NP-hard, even if there is a bijective mappingf:𝒳→𝒴:𝑓→𝒳𝒴f:\mathcal{X}\to\mathcal{Y}such thaty=f​(x),∀(x,y,z)∼(𝒳,𝒴,𝒵)formulae-sequence𝑦𝑓𝑥similar-tofor-all𝑥𝑦𝑧𝒳𝒴𝒵y=f(x),\forall(x,y,z)\sim(\mathcal{X},\mathcal{Y},\mathcal{Z}).
+
+Theorem4demonstrates that multimodal learning solves some learning tasks exponentially faster than unimodal learning. Such exponential separation explains the empirical superiority of multimodal learning from the perspective of computation, supplementing the statistical guatantees in[13].
+
+Notably, the two pivotal factors leading to the statistical benefit of multimodal learning in[13], namely connection and heterogeneity, are also evident in our construction. In particular, the mappingQ𝑄Qbetween𝒳,𝒴𝒳𝒴\mathcal{X},\mathcal{Y}is bijective, meaning there exists a perfect connection between both modalities. On the other hand,𝒳,𝒴𝒳𝒴\mathcal{X},\mathcal{Y}carry different information about the problem, which is useless alone but effective when put together, indicating s strong heterogeneity.
+
+We first introduce the necessary ingredients for the construction of the learning problem. For each pair of unit vectorsv1,v2∈ℝnsubscript𝑣1subscript𝑣2superscriptℝ𝑛v_{1},v_{2}\in\mathbb{R}^{n}, there exist orthogonal matrices inℝ2​nsuperscriptℝ2𝑛\mathbb{R}^{2n}with its first column to be(v12,v12)subscript𝑣12subscript𝑣12(\frac{v_{1}}{\sqrt{2}},\frac{v_{1}}{\sqrt{2}})since‖(v12,v12)‖2=1subscriptnormsubscript𝑣12subscript𝑣1221\|(\frac{v_{1}}{\sqrt{2}},\frac{v_{1}}{\sqrt{2}})\|_{2}=1. In particular, for each pairv1,v2subscript𝑣1subscript𝑣2v_{1},v_{2}we fix one such orthogonal matrixF𝐹F, defining a functionF​(v1,v2):ℝ2​n→ℝ2​n×2​n:𝐹subscript𝑣1subscript𝑣2→superscriptℝ2𝑛superscriptℝ2𝑛2𝑛F(v_{1},v_{2}):\mathbb{R}^{2n}\to\mathbb{R}^{2n\times 2n}as below:
+
+In addition, we define an orthogonal transformation matrixQ​(v1,v2)∈ℝ3​n×3​n𝑄subscript𝑣1subscript𝑣2superscriptℝ3𝑛3𝑛Q(v_{1},v_{2})\in\mathbb{R}^{3n\times 3n}as
+
+The matrixQ​(r1,r2)𝑄subscript𝑟1subscript𝑟2Q(r_{1},r_{2})will serve as a fingerprint of an𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}problemH1∩H2subscript𝐻1subscript𝐻2H_{1}\cap H_{2}. We also define a variant of the intersection of two half-spaces problem.
+
+An instance of𝐈𝐧𝐭𝐇𝐒λsubscript𝐈𝐧𝐭𝐇𝐒𝜆\mathbf{IntHS_{\lambda}}is a set of points inℝnsuperscriptℝ𝑛\mathbb{R}^{n}each labeled either ‘+’ or ‘-’, in which the labels only depend on the firstλ​n𝜆𝑛\lambda ncoordinates whereλ∈(0,1)𝜆01\lambda\in(0,1)is a constant. The goal is to find an intersection of two half-spaces which correctly classifies the maximum number of points, where a ‘+’ point is classified correctly if it lies inside the intersection and a ‘-’ point is classified correctly if it lies outside of it.
+
+For every constantλ>0𝜆0\lambda>0, learning𝐈𝐧𝐭𝐇𝐒λsubscript𝐈𝐧𝐭𝐇𝐒𝜆\mathbf{IntHS_{\lambda}}is NP-hard.
+
+We prove by reduction. Suppose for contradiction𝐈𝐧𝐭𝐇𝐒λsubscript𝐈𝐧𝐭𝐇𝐒𝜆\mathbf{IntHS_{\lambda}}can be learnt in polynomial time, then for each instance of𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}, we can create a new instance of𝐈𝐧𝐭𝐇𝐒λsubscript𝐈𝐧𝐭𝐇𝐒𝜆\mathbf{IntHS_{\lambda}}with dimensionnλ𝑛𝜆\frac{n}{\lambda}by extension. In particular, each pointx∈ℝnλ𝑥superscriptℝ𝑛𝜆x\in\mathbb{R}^{\frac{n}{\lambda}}shares the same label asx[1:n]subscript𝑥delimited-[]:1𝑛x_{[1:n]}in the original𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}instance. As a result, any classifier of𝐈𝐧𝐭𝐇𝐒λsubscript𝐈𝐧𝐭𝐇𝐒𝜆\mathbf{IntHS_{\lambda}}applies to the𝐈𝐧𝐭𝐇𝐒𝐈𝐧𝐭𝐇𝐒\mathbf{IntHS}problem with the same accuracy, contradicting Proposition3.
+∎
+
+Now we are ready to state the learning problem(𝒳,𝒴,𝒵)𝒳𝒴𝒵(\mathcal{X},\mathcal{Y},\mathcal{Z}):m𝑚mdata points(xi,yi,zi)subscript𝑥𝑖subscript𝑦𝑖subscript𝑧𝑖(x_{i},y_{i},z_{i})are given, wherexi,yi∈ℝ3​nsubscript𝑥𝑖subscript𝑦𝑖superscriptℝ3𝑛x_{i},y_{i}\in\mathbb{R}^{3n}represent the two modalities andzi=±subscript𝑧𝑖plus-or-minusz_{i}=\pmis the label. It’s guaranteed that there is an intersection of two half-spaces that classifies all the points correctly, with supports of the defining unit vectors being the firstn𝑛ncoordinates. In other words, it’s a realizable instance of𝐈𝐧𝐭𝐇𝐒𝟏𝟑subscript𝐈𝐧𝐭𝐇𝐒13\mathbf{IntHS_{\frac{1}{3}}}.
+
+In particular, there are unit vectorsr1,r2∈ℝnsubscript𝑟1subscript𝑟2superscriptℝ𝑛r_{1},r_{2}\in\mathbb{R}^{n}and constantsc1,c2∈ℝsubscript𝑐1subscript𝑐2ℝc_{1},c_{2}\in\mathbb{R}(unknown to the learner), such that all pairs(xi,zi)subscript𝑥𝑖subscript𝑧𝑖(x_{i},z_{i})can be perfectly classified byH^1∩H^2subscript^𝐻1subscript^𝐻2\hat{H}_{1}\cap\hat{H}_{2}, whereH^i=(x|r^i⊤​x≤ci)subscript^𝐻𝑖conditional𝑥superscriptsubscript^𝑟𝑖top𝑥subscript𝑐𝑖\hat{H}_{i}=(x|\hat{r}_{i}^{\top}x\leq c_{i})andr^i=(ri,𝟎2​n)subscript^𝑟𝑖subscript𝑟𝑖subscript02𝑛\hat{r}_{i}=(r_{i},\mathbf{0}_{2n}). Meanwhile,yi=Q​(r1,r2)​xisubscript𝑦𝑖𝑄subscript𝑟1subscript𝑟2subscript𝑥𝑖y_{i}=Q(r_{1},r_{2})x_{i}holds for all data points, and all pairs(yi,zi)subscript𝑦𝑖subscript𝑧𝑖(y_{i},z_{i})can be perfectly classified byH~1∩H~2subscript~𝐻1subscript~𝐻2\tilde{H}_{1}\cap\tilde{H}_{2}, whereH~i=(x|r~i⊤​x≤ci)subscript~𝐻𝑖conditional𝑥superscriptsubscript~𝑟𝑖top𝑥subscript𝑐𝑖\tilde{H}_{i}=(x|\tilde{r}_{i}^{\top}x\leq c_{i})andr~i=Q​(r1,r2)​(ri,𝟎2​n)subscript~𝑟𝑖𝑄subscript𝑟1subscript𝑟2subscript𝑟𝑖subscript02𝑛\tilde{r}_{i}=Q(r_{1},r_{2})(r_{i},\mathbf{0}_{2n}).
+
+Define the hypothesis set𝒮𝒮\mathcal{S}as
+
+which is exactly the set of all intersection of two half-spaces. We have the following results.
+
+Properly learning(𝒳,𝒵)𝒳𝒵(\mathcal{X},\mathcal{Z})with𝒮𝒮\mathcal{S}is NP-hard.
+
+It is a direct consequence of Lemma6, noticing that(𝒳,𝒵)𝒳𝒵(\mathcal{X},\mathcal{Z})is an𝐈𝐧𝐭𝐇𝐒𝟏𝟑subscript𝐈𝐧𝐭𝐇𝐒13\mathbf{IntHS_{\frac{1}{3}}}instance.
+∎
+
+Properly learning(𝒴,𝒵)𝒴𝒵(\mathcal{Y},\mathcal{Z})with𝒮𝒮\mathcal{S}is NP-hard.
+
+Although(𝒴,𝒵)𝒴𝒵(\mathcal{Y},\mathcal{Z})is also an𝐈𝐧𝐭𝐇𝐒𝟏𝟑subscript𝐈𝐧𝐭𝐇𝐒13\mathbf{IntHS_{\frac{1}{3}}}instance, we still need to verify that(𝒴,𝒵)𝒴𝒵(\mathcal{Y},\mathcal{Z})exhausts all possible𝐈𝐧𝐭𝐇𝐒𝟏𝟑subscript𝐈𝐧𝐭𝐇𝐒13\mathbf{IntHS_{\frac{1}{3}}}instances (otherwise we can’t apply Lemma6, for example when all(𝒴,𝒵)𝒴𝒵(\mathcal{Y},\mathcal{Z})obey the same𝐈𝐧𝐭𝐇𝐒𝟏𝟑subscript𝐈𝐧𝐭𝐇𝐒13\mathbf{IntHS_{\frac{1}{3}}}instance). Notice thatQ𝑄Qinduces a mappingH1∩H2→H1∩H2→subscript𝐻1subscript𝐻2subscript𝐻1subscript𝐻2H_{1}\cap H_{2}\to H_{1}\cap H_{2}, and it’s equivalent to proving it is a surjective mapping. For any𝐈𝐧𝐭𝐇𝐒𝟏𝟑subscript𝐈𝐧𝐭𝐇𝐒13\mathbf{IntHS_{\frac{1}{3}}}instanceH^1∩H^2subscript^𝐻1subscript^𝐻2\hat{H}_{1}\cap\hat{H}_{2}whereH^i=(x|r^i⊤​x≤ci)subscript^𝐻𝑖conditional𝑥superscriptsubscript^𝑟𝑖top𝑥subscript𝑐𝑖\hat{H}_{i}=(x|\hat{r}_{i}^{\top}x\leq c_{i})andr^i=(ri,𝟎2​n)subscript^𝑟𝑖subscript𝑟𝑖subscript02𝑛\hat{r}_{i}=(r_{i},\mathbf{0}_{2n}), becauser^isubscript^𝑟𝑖\hat{r}_{i}also has support in the firstn𝑛ncoordinates, we have thatr^i=Q​(r1,r2)​risubscript^𝑟𝑖𝑄subscript𝑟1subscript𝑟2subscript𝑟𝑖\hat{r}_{i}=Q(r_{1},r_{2})r_{i}withri=r^isubscript𝑟𝑖subscript^𝑟𝑖r_{i}=\hat{r}_{i}, proving the mapping is surjective.
+∎
+
+Assumem≥3​n𝑚3𝑛m\geq 3n,(𝒳,𝒴,𝒵)𝒳𝒴𝒵(\mathcal{X},\mathcal{Y},\mathcal{Z})is properly learnable with𝒮𝒮\mathcal{S}(applied tox𝑥xonly) inO​(m​n2)𝑂𝑚superscript𝑛2O(mn^{2})time, when there exist3​n3𝑛3ndata points with linearly-independentxisubscript𝑥𝑖x_{i}.
+
+Consider the simple algorithm1which consists three steps:
+
+find a setS𝑆Sof linearly-independentxisubscript𝑥𝑖x_{i}(line 2-6).
+
+findQ𝑄Qby solving a linear system ofS𝑆S(line 7-8).
+
+rankxisubscript𝑥𝑖x_{i}along the directions ofr1,r2subscript𝑟1subscript𝑟2r_{1},r_{2}to getc1,c2subscript𝑐1subscript𝑐2c_{1},c_{2}(line 9-10).
+
+Step 1 runs inO​(m​n2)𝑂𝑚superscript𝑛2O(mn^{2})time, since testing orthogonality between two points runs inO​(n)𝑂𝑛O(n)time and|S|=O​(n)𝑆𝑂𝑛|S|=O(n). Step 2 runs inO​(n3)𝑂superscript𝑛3O(n^{3})time which is the complexity of solving a system of linear equations. Step 3 runs inO​(m​n)𝑂𝑚𝑛O(mn)time. Under our assumptionm≥3​n𝑚3𝑛m\geq 3n, the total running time isO​(m​n2+n3+m​n)=O​(m​n2)𝑂𝑚superscript𝑛2superscript𝑛3𝑚𝑛𝑂𝑚superscript𝑛2O(mn^{2}+n^{3}+mn)=O(mn^{2}).
+
+We still need to verify the found classifierh​(x)ℎ𝑥h(x):
+
+does classify all data points correctly. By the construction ofQ𝑄Q, we know there is a classifierh∗​(x)superscriptℎ𝑥h^{*}(x)which classifies all data points correctly, which shares the samerisubscript𝑟𝑖r_{i}withh​(x)ℎ𝑥h(x):
+
+By the choice ofc1,c2subscript𝑐1subscript𝑐2c_{1},c_{2}, we have thatc1≤c1∗,c2≤c2∗formulae-sequencesubscript𝑐1subscriptsuperscript𝑐1subscript𝑐2subscriptsuperscript𝑐2c_{1}\leq c^{*}_{1},c_{2}\leq c^{*}_{2}. Denoteh+={x∈ℝ3​n,h​(x)=+}subscriptℎformulae-sequence𝑥superscriptℝ3𝑛ℎ𝑥h_{+}=\{x\in\mathbb{R}^{3n},h(x)=+\}, we have that
+
+by the facth+⊂h+∗subscriptℎsubscriptsuperscriptℎh_{+}\subset h^{*}_{+}. Meanwhile, by the construction ofh​(x)ℎ𝑥h(x), we have thatX+⊂h+subscript𝑋subscriptℎX_{+}\subset h_{+}, and further
+
+As a result,X+=h+∩Xsubscript𝑋subscriptℎ𝑋X_{+}=h_{+}\cap Xwhich meansh​(x)ℎ𝑥h(x)does classify all data points correctly.
+∎
+
+Lemma9concerns only the learnability on the training data, to extend this result to PAC-learnability we introduce the following definition.
+
+A data distributionD𝐷Don(𝒳,𝒴,𝒵)𝒳𝒴𝒵(\mathcal{X},\mathcal{Y},\mathcal{Z})is called non-degenerate, if
+
+Most distributions whose support has non-zero measure are non-degenerate, including common uniform and Gaussian distributions. We have the following result for PAC-learnability.
+
+Assumem𝑚mdata points are sampled from a non-degenerate distributionD𝐷Dandm≥3​n𝑚3𝑛m\geq 3n,(𝒳,𝒴,𝒵)𝒳𝒴𝒵(\mathcal{X},\mathcal{Y},\mathcal{Z})is properly PAC-learnable with𝒮𝒮\mathcal{S}(applied tox𝑥xonly) inO​(m​n2)𝑂𝑚superscript𝑛2O(mn^{2})time. In particular, with probability at least1−δ1𝛿1-\delta, the generalization errorϵitalic-ϵ\epsilonof algorithm1is upper bounded by
+
+By the assumption thatD𝐷Dis non-degenerate, we have that with probability 1, there exist3​n3𝑛3ndata points with linearly-independentxisubscript𝑥𝑖x_{i}. By the conclusion of Lemma9, the learnt classifier achieves zero loss on training data.
+
+From classic statistical learning theory, the generalization error of such classifier can be characterized by the VC-dimension of the hypothesis class.
+
+With probability at least1−δ1𝛿1-\delta, for everyhℎhin the hypothesis classℋℋ\mathcal{H}, ifhℎhis consistent withm𝑚mtraining samples, the generalization errorϵitalic-ϵ\epsilonofhℎhis upper bounded by
+
+whered𝑑ddenotes the VC-dimension ofℋℋ\mathcal{H}.
+
+We only need to determine the VC-dimension of the class of intersection of two half-spaces inℝ3​nsuperscriptℝ3𝑛\mathbb{R}^{3n}. It’s well known the VC-dimension of a single half-space isO​(n)𝑂𝑛O(n).[2]shows that thek𝑘k-fold intersection of any VC-class has VC-dimension bounded byO​(d​k​log⁡k)𝑂𝑑𝑘𝑘O(dk\log k). Puttingd=n𝑑𝑛d=nandk=2𝑘2k=2concludes the proof.
+∎
+
+As an extension of our result in proper learning, we consider the problem whether multimodality still possesses such exponential computational benefit when the learner is allowed to output arbitrary hypothesis beyond the hypothesis setℋℋ\mathcal{H}, i.e. the improper learning setting.
+
+The general problem of learning intersections of halfspaces is known to be hard even in the improper learning setting, defined as below.
+
+An instance of𝐈𝐧𝐭𝐇𝐒​(𝐍)𝐈𝐧𝐭𝐇𝐒𝐍\mathbf{IntHS(N)}is a set of points inℝnsuperscriptℝ𝑛\mathbb{R}^{n}each labeled either ‘+’ or ‘-’ and the goal is to find an intersection ofN𝑁Nnumber of half-spaces which correctly classifies the maximum number of points, where a ‘+’ point is classified correctly if it lies inside the intersection and a ‘-’ point is classified correctly if it lies outside of it.
+
+We will rely on the following hardness of improper learning intersections of halfspaces.
+
+[[4,5]]
+Iflimn→∞q​(n)=∞subscript→𝑛𝑞𝑛\lim_{n\to\infty}q(n)=\inftyis a super-constant, there is no efficient algorithm that improperly learnsq​(n)𝑞𝑛q(n)numbers of intersections of halfspaces inRnsuperscript𝑅𝑛R^{n}.
+
+Using a similar analysis to Theorem4, we obtain the following separation result.
+
+There exists a multimodal learning problem(𝒳,𝒴,𝒵)𝒳𝒴𝒵(\mathcal{X},\mathcal{Y},\mathcal{Z})which is PAC-learnable in polynomial time, while both unimodal learning problems(𝒳,𝒵)𝒳𝒵(\mathcal{X},\mathcal{Z}),(𝒴,𝒵)𝒴𝒵(\mathcal{Y},\mathcal{Z})are NP-hard in the improper learning setting, even if there is a bijective mappingf:𝒳→𝒴:𝑓→𝒳𝒴f:\mathcal{X}\to\mathcal{Y}such thaty=f​(x),∀(x,y,z)∼(𝒳,𝒴,𝒵)formulae-sequence𝑦𝑓𝑥similar-tofor-all𝑥𝑦𝑧𝒳𝒴𝒵y=f(x),\forall(x,y,z)\sim(\mathcal{X},\mathcal{Y},\mathcal{Z}).
+
+The proof is identical to that of Theorem4except for two minor places:
+
+We need a strengthened version of Lemma6withλ𝜆\lambdabeing1/poly​(n)1poly𝑛1/\textbf{poly}(n).
+
+The hard instance construction and the algorithm of multimodal learning is slightly modified to accommodate the new Lemma.
+
+We begin with the strengthened version of Lemma6. The definition of𝐈𝐧𝐭𝐇𝐒​(N)λ𝐈𝐧𝐭𝐇𝐒subscript𝑁𝜆\mathbf{IntHS}(N)_{\lambda}follows directly from Definition5, and we won’t repeat here.
+
+Given any super-constantq​(n)𝑞𝑛q(n). For all constantsC≥1,c>0formulae-sequence𝐶1𝑐0C\geq 1,c>0, improperly learning𝐈𝐧𝐭𝐇𝐒​(q​(n))1C​nc𝐈𝐧𝐭𝐇𝐒subscript𝑞𝑛1𝐶superscript𝑛𝑐\mathbf{IntHS}(q(n))_{\frac{1}{Cn^{c}}}is NP-hard.
+
+We prove by reduction. Suppose for contradiction𝐈𝐧𝐭𝐇𝐒​(q​(n))1C​nc𝐈𝐧𝐭𝐇𝐒subscript𝑞𝑛1𝐶superscript𝑛𝑐\mathbf{IntHS}(q(n))_{\frac{1}{Cn^{c}}}can be learnt in polynomial time, then for each instance of𝐈𝐧𝐭𝐇𝐒​(q​(n))𝐈𝐧𝐭𝐇𝐒𝑞𝑛\mathbf{IntHS}(q(n)), we create a new instance of𝐈𝐧𝐭𝐇𝐒​(q′​(C​nc+1))1C​nc𝐈𝐧𝐭𝐇𝐒subscriptsuperscript𝑞′𝐶superscript𝑛𝑐11𝐶superscript𝑛𝑐\mathbf{IntHS}(q^{\prime}(Cn^{c+1}))_{\frac{1}{Cn^{c}}}with dimensionC​nc+1𝐶superscript𝑛𝑐1Cn^{c+1}by extension, whereq′​(C​nc+1)=q​(n)superscript𝑞′𝐶superscript𝑛𝑐1𝑞𝑛q^{\prime}(Cn^{c+1})=q(n)is still a super-constant. In particular, each pointx∈ℝC​nc+1𝑥superscriptℝ𝐶superscript𝑛𝑐1x\in\mathbb{R}^{Cn^{c+1}}shares the same label asx[1:n]subscript𝑥delimited-[]:1𝑛x_{[1:n]}in the original𝐈𝐧𝐭𝐇𝐒​(q​(n))𝐈𝐧𝐭𝐇𝐒𝑞𝑛\mathbf{IntHS}(q(n))instance. Since and polynomial ofC​nc𝐶superscript𝑛𝑐Cn^{c}is also a polynomial ofn𝑛n, we conclude that any classifier of𝐈𝐧𝐭𝐇𝐒​(q​(n))1C​nc𝐈𝐧𝐭𝐇𝐒subscript𝑞𝑛1𝐶superscript𝑛𝑐\mathbf{IntHS}(q(n))_{\frac{1}{Cn^{c}}}applies to the𝐈𝐧𝐭𝐇𝐒​(q​(n))𝐈𝐧𝐭𝐇𝐒𝑞𝑛\mathbf{IntHS}(q(n))problem with the same accuracy, contradicting Theorem14.
+∎
+
+Specifically, we will only use Lemma16withC=1,c=1/2formulae-sequence𝐶1𝑐12C=1,c=1/2. Now we are ready to state the learning problem(𝒳,𝒴,𝒵)𝒳𝒴𝒵(\mathcal{X},\mathcal{Y},\mathcal{Z}):m𝑚mdata points(xi,yi,zi)subscript𝑥𝑖subscript𝑦𝑖subscript𝑧𝑖(x_{i},y_{i},z_{i})are given, wherexi,yi∈ℝnsubscript𝑥𝑖subscript𝑦𝑖superscriptℝ𝑛x_{i},y_{i}\in\mathbb{R}^{n}represent the two modalities andzi=±subscript𝑧𝑖plus-or-minusz_{i}=\pmis the label. It’s guaranteed that there is an intersection ofn−1𝑛1\sqrt{n}-1number of half-spacesH1,H2,⋯,Hn−1subscript𝐻1subscript𝐻2⋯subscript𝐻𝑛1H_{1},H_{2},\cdots,H_{\sqrt{n}-1}that classifies all the points correctly, with supports of the defining unit vectors being the firstn𝑛\sqrt{n}coordinates. In other words, it’s a realizable instance of𝐈𝐧𝐭𝐇𝐒​(n−1)1/n𝐈𝐧𝐭𝐇𝐒subscript𝑛11𝑛\mathbf{IntHS}(\sqrt{n}-1)_{1/\sqrt{n}}(withq​(x)=x−1𝑞𝑥𝑥1q(x)=x-1).
+
+In particular, there are unit vectorsr1,r2,⋯,rn−1∈ℝnsubscript𝑟1subscript𝑟2⋯subscript𝑟𝑛1superscriptℝ𝑛r_{1},r_{2},\cdots,r_{\sqrt{n}-1}\in\mathbb{R}^{\sqrt{n}}and constantsc1,c2,⋯,cn−1∈ℝsubscript𝑐1subscript𝑐2⋯subscript𝑐𝑛1ℝc_{1},c_{2},\cdots,c_{\sqrt{n}-1}\in\mathbb{R}(unknown to the learner), such that all pairs(xi,zi)subscript𝑥𝑖subscript𝑧𝑖(x_{i},z_{i})can be perfectly classified by∩iH^isubscript𝑖subscript^𝐻𝑖\cap_{i}\hat{H}_{i}, whereH^i=(x|r^i⊤​x≤ci)subscript^𝐻𝑖conditional𝑥superscriptsubscript^𝑟𝑖top𝑥subscript𝑐𝑖\hat{H}_{i}=(x|\hat{r}_{i}^{\top}x\leq c_{i})andr^i=(ri,𝟎n−n)subscript^𝑟𝑖subscript𝑟𝑖subscript0𝑛𝑛\hat{r}_{i}=(r_{i},\mathbf{0}_{n-\sqrt{n}}). Similarly, we can define theQ𝑄Qmatrix as
+
+where the functionF​(v1,v2,⋯,vn−1):ℝn−n→ℝ(n−n)×(n−n):𝐹subscript𝑣1subscript𝑣2⋯subscript𝑣𝑛1→superscriptℝ𝑛𝑛superscriptℝ𝑛𝑛𝑛𝑛F(v_{1},v_{2},\cdots,v_{\sqrt{n}-1}):\mathbb{R}^{n-\sqrt{n}}\to\mathbb{R}^{(n-\sqrt{n})\times(n-\sqrt{n})}is chosen as below:
+
+Meanwhile,yi=Q​(v1,v2,⋯,vn−1)​xisubscript𝑦𝑖𝑄subscript𝑣1subscript𝑣2⋯subscript𝑣𝑛1subscript𝑥𝑖y_{i}=Q(v_{1},v_{2},\cdots,v_{\sqrt{n}-1})x_{i}holds for all data points, and all pairs(yi,zi)subscript𝑦𝑖subscript𝑧𝑖(y_{i},z_{i})can be perfectly classified by∩iH~isubscript𝑖subscript~𝐻𝑖\cap_{i}\tilde{H}_{i}, whereH~i=(x|r~i⊤​x≤ci)subscript~𝐻𝑖conditional𝑥superscriptsubscript~𝑟𝑖top𝑥subscript𝑐𝑖\tilde{H}_{i}=(x|\tilde{r}_{i}^{\top}x\leq c_{i})andr~i=Q​(v1,v2,⋯,vn−1)​(ri,𝟎n−n)subscript~𝑟𝑖𝑄subscript𝑣1subscript𝑣2⋯subscript𝑣𝑛1subscript𝑟𝑖subscript0𝑛𝑛\tilde{r}_{i}=Q(v_{1},v_{2},\cdots,v_{\sqrt{n}-1})(r_{i},\mathbf{0}_{n-\sqrt{n}}).
+
+Via the same argument as Theorem4, according to Lemma16, both improperly learning(𝒳,𝒵)𝒳𝒵(\mathcal{X},\mathcal{Z})and improperly learning(𝒴,𝒵)𝒴𝒵(\mathcal{Y},\mathcal{Z})are hard.
+
+We only need to show(𝒳,𝒴,𝒵)𝒳𝒴𝒵(\mathcal{X},\mathcal{Y},\mathcal{Z})can be learnt efficiently. The same algorithm will be applied to decode all therisubscript𝑟𝑖r_{i}andcisubscript𝑐𝑖c_{i}is set asmaxx∈X+⁡ri⊤​xsubscript𝑥subscript𝑋superscriptsubscript𝑟𝑖top𝑥\max_{x\in X_{+}}r_{i}^{\top}x. The classifier we use is still
+
+By the construction ofQ𝑄Q, we know there is a classifierh∗​(x)superscriptℎ𝑥h^{*}(x)which classifies all data points correctly, which shares the samerisubscript𝑟𝑖r_{i}withh​(x)ℎ𝑥h(x):
+
+By the choice ofcisubscript𝑐𝑖c_{i}, we have thatci≤ci∗,∀isubscript𝑐𝑖subscriptsuperscript𝑐𝑖for-all𝑖c_{i}\leq c^{*}_{i},\forall i. Denoteh+={x∈ℝn,h​(x)=+}subscriptℎformulae-sequence𝑥superscriptℝ𝑛ℎ𝑥h_{+}=\{x\in\mathbb{R}^{n},h(x)=+\}, we have that
+
+by the facth+⊂h+∗subscriptℎsubscriptsuperscriptℎh_{+}\subset h^{*}_{+}. Meanwhile, by the construction ofh​(x)ℎ𝑥h(x), we have thatX+⊂h+subscript𝑋subscriptℎX_{+}\subset h_{+}, and further
+
+As a result,X+=h+∩Xsubscript𝑋subscriptℎ𝑋X_{+}=h_{+}\cap Xwhich meansh​(x)ℎ𝑥h(x)does classify all data points correctly. The rest of the proof on PAC learning easily follows from Theorem4and we omit it here.
+
+∎
+
+In this paper, we take a preliminary step towards unraveling the computational benefit of multimodal learning. We demonstrate an exponential separation in computation between multimodal and unimodal learning by constructing a variant of the intersection of two half-spaces
+problem, which is NP-hard for any unimodal algorithm but can be efficiently solved by a multimodal algorithm. Complementing the statistical merits of multimodal learning as shown in[13], our result provides a more comprehensive theoretical understanding of the power of multimodal learning.
+
+The main limitation of this work, in our opinion, is on the contrived argument that multimodal learning is tractable: the efficient learning scheme provided in this work only succeeds on a narrow, intricately designed class of problem instances. These results alone are not enough to suggest that computational benefits of multimodal learning are a more general phenomenon.
+
+We conclude with two questions as future directions to improve the preliminary results presented in this work.
+
+Can we show such separation in computation for more natural learning problems? Ideally, a good efficient learning algorithm for the multimodal setting should have less dependence on the problem structure, such as ERM.
+
+Can we obtain a general sufficient condition for the computational benefit of multimodal learning? Even a polynomial improvement is interesting.
+
+[图片: images\image_1.png]
+
+[图片: images\image_2.png]
+

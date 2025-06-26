@@ -1,11 +1,12 @@
 "use client";
 
-import { Box, Heading, Image } from "@chakra-ui/react";
+import { Box, Heading } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { Article } from "@/types/article";
 import { useArticleStore } from "@/store/articleStore";
+import EnhancedImage from "./EnhancedImage";
 
 interface DraggableArticleCardProps {
   article: Article;
@@ -135,12 +136,12 @@ const DraggableArticleCard = ({ article }: DraggableArticleCardProps) => {
           style={{ flex: "0 0 auto" }}
           transition={{ duration: 0.35, ease: "linear" }}
         >
-          <Image 
+          <EnhancedImage 
             src={imageUrl} 
             alt={title}
+            displayMode="card"
             w="100%"
             h="280px"
-            objectFit="cover"
             borderRadius="16px"
           />
         </motion.div>

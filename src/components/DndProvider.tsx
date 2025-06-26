@@ -4,8 +4,9 @@ import { ReactNode, useState } from "react";
 import { DndContext, DragEndEvent, DragStartEvent, DragOverlay, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { useArticleStore } from "@/store/articleStore";
 import { Article } from "@/types/article";
-import { Box, Heading, Image } from "@chakra-ui/react";
+import { Box, Heading } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
+import EnhancedImage from "./EnhancedImage";
 
 interface DndProviderProps {
   children: ReactNode;
@@ -83,12 +84,12 @@ const DndProvider = ({ children }: DndProviderProps) => {
               w="280px"
               className="article-card"
             >
-              <Image 
+              <EnhancedImage 
                 src={activeArticle.imageUrl} 
                 alt={activeArticle.title}
+                displayMode="thumbnail"
                 w="100%"
                 h="180px"
-                objectFit="cover"
               />
               <Box p={3}>
                 <Heading size="sm" noOfLines={2} color="white">

@@ -47,18 +47,20 @@ const mockRagService = {
             (message: StreamMessage) => {
               switch (message.type) {
                 case 'token':
-                  const data = {
-                    text: message.content,
-                    finished: false,
-                    sources: null
-                  };
-                  controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(data)}\n\n`));
+                  if (message.content) {
+                    const data = {
+                      text: message.content, // 直接使用收到的内容，mockRagflowService已经做了累积
+                      finished: false,
+                      sources: null
+                    };
+                    controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(data)}\n\n`));
+                  }
                   break;
                   
                 case 'sources':
                   if (message.sources) {
                     const finalData = {
-                      text: message.sources.map(src => src.content).join("\n"),
+                      text: message.content || '', // 使用最后累积的内容
                       finished: true,
                       sources: message.sources
                     };

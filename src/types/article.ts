@@ -57,6 +57,7 @@ export interface SearchResult {
   title: string;
   imageUrl: string;
   summary?: string;
+  content?: string;
   publishedAt?: string;
   relevanceScore?: number; // 后端为relevance_score
   tags?: string[];

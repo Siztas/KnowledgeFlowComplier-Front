@@ -76,16 +76,24 @@ export const mockRagflowService = {
     // 模拟流式传输延迟
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // 模拟打字效果，每个词发送一个token
-    const words = answer.split(' ');
-    for (let i = 0; i < words.length; i++) {
+    // 模拟打字效果，每5个字符发送一次更新
+    let accumulatedContent = '';
+    const updateInterval = 5; // 每5个字符发送一次
+    
+    for (let i = 0; i < answer.length; i++) {
       // 添加随机延迟模拟打字速度
-      await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 150));
+      await new Promise(resolve => setTimeout(resolve, 20 + Math.random() * 80));
       
-      onMessage({
-        type: 'token',
-        content: (i === 0 ? '' : ' ') + words[i]
-      });
+      // 累积内容
+      accumulatedContent += answer[i];
+      
+      // 每积累updateInterval个字符或到达文本末尾时才发送更新
+      if ((i + 1) % updateInterval === 0 || i === answer.length - 1) {
+        onMessage({
+          type: 'token',
+          content: accumulatedContent
+        });
+      }
     }
     
     // 模拟延迟后发送源文档
@@ -96,7 +104,8 @@ export const mockRagflowService = {
     
     onMessage({
       type: 'sources',
-      sources
+      sources: sources,
+      content: accumulatedContent // 在sources消息中也包含最终的累积内容
     });
     
     // 标记流结束

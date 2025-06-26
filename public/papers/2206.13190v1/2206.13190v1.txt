@@ -1,0 +1,553 @@
+标题：An Empirical Study of Personalized Federated Learning
+
+Federated learning is a distributed machine learning approach in which a
+single server and multiple clients collaboratively build machine learning
+models without sharing datasets on clients. A challenging issue of
+federated learning is data heterogeneity (i.e., data distributions may
+differ across clients). To cope with this issue, numerous federated learning
+methods aim at personalized federated learning and build optimized models
+for clients. Whereas existing studies empirically evaluated their own methods,
+the experimental settings (e.g., comparison methods, datasets, and client
+setting) in these studies differ from each other, and it is unclear which
+personalized federate learning method achieves the best performance and how
+much progress can be made by using these methods instead of standard (i.e.,
+non-personalized) federated learning.
+In this paper, we benchmark the performance of existing personalized federated
+learning through comprehensive experiments to evaluate the characteristics of
+each method. Our experimental study shows that (1) there are no champion
+methods, (2) large data heterogeneity often leads to high accurate predictions,
+and (3) standard federated learning methods (e.g. FedAvg) with fine-tuning
+often outperform personalized federated learning methods. We open our benchmark
+toolFedBenchfor researchers to conduct experimental studies with various
+experimental settings.
+
+Federated learning has emerged as a distributed machine learning approach
+in which a single server and multiple clients collaboratively build machine
+learning models without sharing datasets on clients in order to reduce
+privacy risks and communication traffic[28].
+Its general procedure consists of two steps: (111) client training, in which
+clients train models on their local data and send their trained models to
+the server, and (222) model aggregation, in which the server aggregates those
+models to build a global model and distributes the global model to the clients.
+Due to its effectiveness in a distributed scenario, federated learning has
+received considerable attention from research communities and numerous methods
+have been proposed[4,6,18,10,13,20,36,37,38].
+
+One of the main challenges in federated learning lies on data heterogeneity:
+clients have local data that differ in distributions’, i.e., they do not conform
+to the property of independent and identically distributed (IID) random
+variables. This causes difficulty in learning a single global model that is
+optimal for all clients. It was reported that, in typical federated learning
+methods, model parameters of a global model are divergent when each client has
+non-IID local data[20,21]. To deal with
+this issue, a recent trend resorts topersonalized federated learning,
+which aims to buildpersonalized modelsthat are optimized for
+clients[2,5,19,23,25,27,33,35,39].
+
+Motivation.While empirical evaluations are available in existing studies, the experimental
+settings (e.g., comparison methods, datasets, and client settings) in these
+studies differ from each other. Despite a comprehensive comparison and analysis
+of non-personalized federated learning methods on non-IID data[17],
+to the best of our knowledge, a comprehensive comparison and analysis of
+personalized federated learning methods have not been conducted yet.
+Hence the following three questions remain unanswered:
+
+Which personalized federated learning method performs the best?
+
+Do personalized federated learning methods perform better than
+non-personalized federated learning methods?
+
+How does the experimental setting affect the model performance?
+
+Contributions.In this paper, we benchmark the performance of various personalized federated
+learning methods in comprehensive experimental studies.
+For future method development, we summarize several key findings of our study:
+
+There are no champion methods: none of the existing
+state-of-the-art personalized federated learning methods outperform the
+others in all the cases.
+
+Fine-tuning works well for data heterogeneity: standard
+federated learning methods with fine-tuning are able to build highly
+accurate personalized models, which are not evaluated fairly in existing
+studies.
+
+Large data heterogeneity often leads to high accuracy: the
+larger the degree of data heterogeneity, the more accurate the personalized
+federated learning methods are.
+
+To foster future work, we developFedBench, a Jupyter notebook-based tool,
+which supports performing easily experimental studies with various methods,
+experimental settings, and datasets.FedBenchis publicly available athttps://github.com/OnizukaLab/FedBenchunder the MIT licence.
+
+We describe the problem formulation of personalized federated learning.
+Consider a server and a set of clients which collaboratively build
+personalized models of clients. LetS𝑆Sdenote the set of clients.|S|𝑆|S|is the number of clients. We use a subscripti𝑖ifor the index of
+thei𝑖i-th client.Disubscript𝐷𝑖D_{i}denotes the local data of clienti𝑖i.nisubscript𝑛𝑖n_{i}denotes the number of data samples (e.g., records, images, and
+texts).N𝑁Ndenotes the sum ofnisubscript𝑛𝑖n_{i}across all the clients.xisubscript𝑥𝑖x_{i}andyisubscript𝑦𝑖y_{i}are the features and the labels of samples contained in the local
+data of clienti𝑖i, respectively.T𝑇TandE𝐸Eare the total numbers of
+global communication rounds and local training rounds, respectively,
+where global communication refers to the communication between the
+server and the clients during training and local training refers to the
+training of each client’s model using its local data.
+
+In standard federated learning, a server and clients aim to create a
+single global modelwgsubscript𝑤𝑔w_{g}. We define standard federated learning as
+the following optimization problem:
+
+where𝒯isubscript𝒯𝑖\mathcal{T}_{i}is the objective for clienti𝑖iand is defined as follows:
+
+wherefisubscript𝑓𝑖f_{i}is a loss function.
+
+In personalized federated learning, a server and clients aim to create
+a personalized modelwpsubscript𝑤𝑝w_{p}for each client. We define personalized
+federated learning as the following optimization problem:
+
+wherewpisubscript𝑤subscript𝑝𝑖w_{{p}_{i}}is the personalized model of clienti𝑖i.
+
+We introduce a set of representative federated learning methods which are
+evaluated in this paper. The characteristics are summarized in Table1.
+
+Standard federated learning.The basic method on federated learning is FedAvg[28],
+which aggregates all the trained models of the clients by averaging their
+model parameters to build a single global model.
+FedProx[20]utilizes a regularization term in its loss
+function so that the clients’ trained models will not significantly differ from
+the global model.
+
+Personalized federated learning.Hypcluster[25]is a method that divides the set of clients
+into groups and creates a model for each group. Federated mutual learning
+(FML)[33]and FedMe[27]use deep mutual
+learning[40], which is a machine learning method by which multiple
+models are trained to imitate each other’s output. In FML, each client trains
+its own personalized model independently and a generalized model is trained
+collaboratively. In FedMe, each client trains its own personalized model and
+other clients’ personalized models, depending on a clustering. In
+LG-FedAvg[23], FedPer[2], and FedRep[5], the
+server and each client train a part of the model. These methods combine the
+server’s and the clients’ sub-models for training and inference. In LG-FedAvg,
+the clients train the input part of the model, and the server trains the
+output part of the model. In FedPer and FedRep, the clients train the output
+part of the model, and the server trains the input part of the model. In
+Ditto[19]and pFedMe[35], the personalized
+models of the clients do not stray too far from the global model.
+Ditto updates the personalized models based on the difference between the model
+parameters of the global model and those of the personalized models, while
+pFedMe employs Moreau envelopes as the clients’ regularized loss functions to
+facilitate convergence analysis.
+
+In federated learning, datasets, client, and training settings affect the
+performance of learning methods. To evaluate the performance of existing methods and understand their
+characteristics, we consider the following three design dimensions in this
+study.
+
+Number of clients.The number of clients may significantly differ, depending on the use case
+we target. For example, the number of the clients may be around 10 for
+small institutions, while the number of the clients may be 100 or even more
+for mobile devices. As the number of clients increases, it becomes more
+difficult to aggregate models on the server, resulting in less accuracy.
+Therefore, a robust method for varying numbers of clients is desirable.
+
+Total number of data samples.Like the number of clients, the total number of data samples also depends
+on the use case, and the performances of federated learning methods may
+differ when we vary the total number of data samples. Even if the server is
+aware of the numbers of data samples of the clients, it is challenging to
+select an optimal method. A robust method for different numbers of data
+samples is desirable. To this end, it is necessary to evaluate how the
+performances of existing methods vary with the total number of data samples.
+
+Degree of data heterogeneity.As the degree of data heterogeneity increases, the accuracy of
+non-personalized federated learning decreases, while personalized federated
+learning rather improves accuracy because it allows the construction of a
+model that fits each client. Previous studies have not comprehensively
+evaluated this impact on the performance of personalized federated learning
+methods. In this paper, we compare and discuss the accuracies of existing
+methods by varying the degree of data heterogeneity.
+
+In this section, we introduce experimental configurations and report
+our experimental results. To answer the questions described in
+Section1, we perform the following experiments:
+(1) To evaluate the performance of personalized and non-personalized
+federated learning methods, we compare the methods in terms of accuracy,
+convergence speed, communication traffic, and training time.
+(2) To evaluate the impact of experimental settings on accuracy, we
+conduct experiments by varying the number of clients, the total number
+of data samples, and the degree of data heterogeneity described in
+Section3.
+
+To simplify the experiments, we used Pytorch to create a virtual client
+and the server on a single GPU machine. Experiments were performed on a
+Linux server with NVIDIA Tesla V100 SXM2 GPU (16GB) and Intel Xeon Gold
+6148 Processor CPU (384GB).
+
+Datasets, tasks, and models.We use five datasets: FEMNIST, Shakespeare, Sent140, MNIST, and CIFAR-10,
+which are often used in previous studies[4,5,16,20,25,28,36].
+FEMNIST, Shakespeare, and Sent140 are originally separated for federated
+learning. While since MNIST and CIFAR-10 are not separated, we need to
+divide these two datasets synthetically.
+
+FEMNIST[3]includes images of handwritten characters
+with626262labels, and is divided into 3,400 sub-datasets of writers.
+Shakespeare[20]includes lines in “The Complete
+Works of William Shakespeare”, and is divided into143143143sub-datasets of
+actors. Sent140[3]includes the text of tweets with222labels, either positive sentiment or negative sentiment. This dataset
+is divided into 660,120 sub-datasets of twitter users, and we use927927927sub-datasets with more than 50 tweets in the experiment. MNIST[15]includes images of handwritten characters with101010labels.
+CIFAR-10[14]includes photo images with101010labels. We divide
+MNIST and CIFAR-10 into sub-datasets using the Dirichlet distribution as in[36]. Table2shows the statistics
+of the above datasets. We note that we randomly divide MNIST and CIFAR-10
+in each test, so the statistics of them are the values in a single test.
+
+In tasks and models, we follow the previous studies[4,5,16,20,25,28,31,36].
+In task settings, we conduct an image classification task for FEMNIST, MNIST, and CIFAR-10.
+For Shakespeare, we conduct a next-character prediction that infers the next characters after given sentences.
+For Sent140, we conduct a binary classification that categorizes whether a tweet is a positive or negative sentiment.
+We use different models for each task following the existing works[31,36,5].
+For FEMNIST and MNIST we use CNN, and for Shakespeare we use LSTM.
+For CIFAR-10, we use VGG with the same modification reported in[36].
+For Sent140, we use a pre-trained 300-dimensional GloVe embedding[30]and train RNN with an LSTM module.
+
+Client and training setting.We vary several parameters for clients and training: the number of clients,
+the total number of data samples, and the degree of data heterogeneity.
+The number of clients,|S|𝑆|S|, is selected from{5,10,20,100}51020100\{5,10,20,100\}. We change
+the total number of data samples using a ratioD𝐷Dto the entire dataset
+(i.e., the total number of data samples isD⋅N⋅𝐷𝑁D\cdot N), whose range is{0.25,0.5,0.75,0.1}0.250.50.750.1\{0.25,0.5,0.75,0.1\}.
+To change the degree of data heterogeneity, we use a parameterαl​a​b​e​lsubscript𝛼𝑙𝑎𝑏𝑒𝑙\alpha_{label}to control the degree of heterogeneity for the labels on
+the clients.αl​a​b​e​lsubscript𝛼𝑙𝑎𝑏𝑒𝑙\alpha_{label}is selected from{0.1,0.5,1.0,5.0}0.10.51.05.0\{0.1,0.5,1.0,5.0\}.
+The default values of|S|𝑆|S|,D𝐷D, andαl​a​b​e​lsubscript𝛼𝑙𝑎𝑏𝑒𝑙\alpha_{label}are 20, 1.0, and 0.5,
+respectively.
+
+The five datasets are pre-partitioned into training and test data.
+In FEMNIST, Shakespeare, and Sent140, we randomly select|S|𝑆|S|sub-datasets as local data. In MNIST and CIFAR-10, we randomly divide
+the whole train and test data into|S|𝑆|S|local data. The distributions
+of test and train data follow the same Dirichlet distribution.
+We split the training data into7:3:737:3for FEMNIST, Shakespeare, and
+Sent140, and into8:2:828:2for MNIST and CIFAR-10. The two splits are
+used for training and validation, respectively. We select 1,000
+unlabeled data from the training data for FedMe, and the unlabeled
+data is excluded from the training data.
+
+We set the number of global communication rounds to be300300300,200200200,500500500,100100100, and100100100for FEMNIST, MNIST, CIFAR-10, Shakespeare, and
+Sent140, respectively. We set the local epochE𝐸Eto be222for all
+the settings. All the clients participate in each global communication
+round following recent studies[2,33,36].
+We conduct training and test five times and report mean and standard
+deviation (std) of accuracy over five times of experiments with
+different clients.
+
+Methods and hyperparameter tuning.We compare three types of methods: (1) non-personalized federated
+learning methods, (2) personalized federated learning methods, and
+(3) non-federated learning methods. For (1), we use FedAvg and Fedprox;
+for (2), we use HypCluster, FML, FedMe, LG-FedAvg, FedPer, FedRep,
+Ditto, and pFedMe; for (3), we use Local Data Only, in which clients
+build their models on their local data, and Centralized, in which a
+server collects local data from all clients (centralized can be
+considered as an oracle). We use fine-tuning on each client for FedAvg,
+Fedprox, HypCluster, FedMe, and Centralized after building their models.
+In FML, LG-FedAvg, FedPer, FedRep, Ditto, and pFedMe, we do not use
+fine-tuning because techniques similar to fine-tuning are included in
+these methods.
+
+We describe hyperparameter tuning. The learning rate is selected from{10−3,10−2.5,10−2,…,100.5}superscript103superscript102.5superscript102…superscript100.5\{10^{-3},10^{-2.5},10^{-2},\ldots,10^{0.5}\}and optimized for
+each method on default parameters.
+The optimized learning rate is used in the experiment of impact of the
+experimental setup. The optimization method is SGD (stochastic gradient
+descent) with momentum0.90.90.9and weight decay10−4superscript10410^{-4}. The batch
+sizes of FEMNIST, MNIST, CIFAR-10, Shakespeare, and Sent140 are202020,202020,404040,101010, and444, respectively. Hyperparameters specific to
+each method is described in the supplementary file.
+
+We compare the methods in terms of accuracy, convergence speed,
+training speed, and communications traffic in the default parameter
+setting. In this experiment, we have the two findings:
+
+Finding 1.No method consistently outperforms the other methods in all the datasets.{screen}Finding 2.Only a few state-of-the-art personalized methods outperform standard federated learning methods.
+
+Accuracy.Table3shows the accuracy and average ranking
+of each method. We note that the standard deviations of FEMNIST, Shakespeare,
+and Sent140 are relatively large because the clients differ in each
+test (we randomly select 20 clients from the set of clients). From
+Table3, we can see that the most accurate method is
+FedMe+FT for FEMNIST, Ditto for Shakespeare, Hypcluster for Sent140,
+FedAvg+FT for MNIST, and FedMe+FT for CIFAR-10. From this result, we find that
+none of the existing state-of-the-art personalized federated learning methods
+outperform the others in all the datasets.
+
+We can also see that FedMe+FT has the highest average rank. On the other hand,
+the other personalized federated learning methods have lower average ranks
+than the standard federated learning methods such as FedAvg and FedProx with
+fine-tuning. From this result, we can find that only a few state-of-the-art
+personalized methods outperform standard federated learning methods, and those
+with fine-tuning are often sufficient to deal with data heterogeneity.
+
+Convergence speed.Figure1shows the validation accuracy
+of each global communication round. The validation accuracy is the
+average accuracy at each epoch of the five experiments. Since each
+client evaluates its model by its own validation data after training
+its model and before aggregating models, the accuracy of each method
+is equivalent to that after fine-tuning.
+
+From Figure1, we can see that FedAvg and
+Ditto are stable and converge quickly for all datasets. On the other
+hand, we can see that FedMe has the highest average rank but loses
+in convergence speed to FedAvg and Ditto. From this result, we can
+find that the methods with the highest accuracy and the fastest
+convergence are different.
+
+[图片: images\image_1.png]
+图片说明: (a)FEMNIST
+
+[图片: images\image_2.png]
+图片说明: (a)FEMNIST
+
+[图片: images\image_3.png]
+图片说明: (a)FEMNIST
+
+[图片: images\image_4.png]
+图片说明: (a)FEMNIST
+
+[图片: images\image_5.png]
+图片说明: (a)FEMNIST
+
+[图片: images\image_6.png]
+图片说明: (a)FEMNIST
+
+Training time.We evaluate run time on the training phase in each method.
+Figure2shows the average run time per
+global communication round. We note that the run time is the
+average of ten global communication rounds.
+
+From Figure2, we can see that FedAvg
+has the smallest training time for all datasets. FedMe and Ditto
+have a large training time than the other methods. pFedMe spends
+similar training time to the other methods on FEMNIST and
+Sent140, while it spends much larger time than the other methods
+on Shakespeare, MNIST, and CIFAR-10. pFedMe has large training
+time for clients, so when the volume of local data increases,
+its training time increases.
+
+[图片: images\image_7.png]
+图片说明: Figure 2:Training time per global communication round.
+
+[图片: images\image_8.png]
+图片说明: Figure 2:Training time per global communication round.
+
+Communications traffic.We evaluate communications traffic on the training phase in each method.
+Since each method exchanges models between the server and client,
+communications traffic is compared by the size of model parameters sent
+per global communication round. Figure4shows the communications traffic per global communication round.
+
+From Figure4, we can see that FedMe has
+the largest communication traffic. This is because FedMe has the extra
+model transmission compared with the other methods. FedPer, FedRep, and
+LG-FedAvg have smaller communication traffic than other methods because
+these three methods send only a part of the model between the server and
+the clients. LG-FedAvg has the smallest communication traffic among them
+because the output side of the model has a smaller number of model
+parameters than the input side of the model.
+
+In this section, we compare the accuracy of each method in different experimental settings.
+
+Impact of the number of clients.Table5show the accuracy of varying the number of clients.
+
+From Table5, we can see that the accuracy decreases significantly as the number of clients increases.
+As the number of clients increases, it becomes more difficult to aggregate the model on the server, resulting in decreasing accuracy.
+FedAvg+FT has the highest average rank for MNIST, and Ditto has the highest average rank for CIFAR-10.
+This result indicates that the larger number of clients is more challenging, while we can design robust methods for different number of clients.
+
+Impact of the total number of data samples.Table6shows the accuracy when
+we vary the total number of data samples.
+
+From Table6, we can see that the
+accuracy decreases as the total number of data samples decreases.
+This is because clients do not have sufficient data samples to train
+their models when the number of data samples is small.
+The ranks of methods do not change much, so the number of data
+samples does not significantly impact deciding the superiority of
+methods.
+
+Impact of the degree of data heterogeneity.Table7shows the accuracy when
+we vary the degree of data heterogeneity. A smallerαl​a​b​e​lsubscript𝛼𝑙𝑎𝑏𝑒𝑙\alpha_{label}indicates a larger degree of data heterogeneity.
+
+Finding 3. The larger the degree of data heterogeneity, the
+more accurate the personalized federated learning methods are.
+
+From Table7, we can see that the
+accuracy of FedAvg and FedProx decreases as the degree of data
+heterogeneity increases. On the other hand, we can see that the
+accuracy of personalized federated learning methods tends to
+increase as the degree of data heterogeneity increases. As the degree
+of data heterogeneity increases, the clients can easily build their
+personalized models that fit their local data. We can find that data
+heterogeneity works positively for personalized federated learning.
+
+We can also see that FedAvg+FT and FedProx+FT have the highest average
+rank on MNIST, and FedMe+FT has the highest average rank on CIFAR-10.
+This result indicates that the standard federated learning methods
+with fine-tuning are often sufficient to deal with the data heterogeneity.
+
+We summarize the results of the above experimental study. First,
+there is a trade-off between accuracy, communication traffic, and
+training time. For example, FedMe is accurate in various
+experimental settings but reports large communication traffic and
+training time. Second, the standard federated learning methods with
+fine-tuning can deal well with data heterogeneity. In particular,
+for easy-to-learn datasets such as MNIST, they outperform the
+personalized federated learning methods. Finally, for a small
+number of clients, a large total number of data samples, or a
+large degree of heterogeneity, we observed higher accuracies of
+federated learning methods. These characteristics should be
+considered when developing and evaluating new federated learning
+methods.
+
+We evaluated personalized federated learning in various experimental settings.
+The experimental results showed several key findings: First, no method
+consistently outperformed the others in all the datasets. Second, the large
+degree of data heterogeneity improved the accuracy of personalized federated
+learning methods. Third, standard federated learning with fine-tuning was
+accurate compared with most personalized federated learning methods. We opened
+our Jupyter notebook-based toolFedBenchto facilitate experimental
+studies.
+
+This study has three limitations. First, despite 17 methods (ten federated
+learning, four variants, and three non-federated learning methods) and five
+datasets were used in this study, which are comprehensive compared with
+previous ones, we also note that there are numerous other federated
+learning methods (e.g.,[1,7,8,9,12,13,26,29,34,37,39]) and
+datasets (e.g., DigitFive and Office-Caltech10[22],
+PROSTATE[24], Flicker mammal[11], and
+FLCKER-AES and REAL-CUR[32]). Second, to study
+the impact of the data heterogeneity, we controlled the label distribution
+skew but did not investigate the impact of other types of skews, such
+as quantity skew, in which each client has a different number of data samples,
+and feature distribution skew, in which the clients’ data share the same
+labels but vary in features. Third, we varied the number of clients, the
+total number of data samples, and the degree of data heterogeneity, whereas
+other parameters, such as client participant ratio, the number of local
+epochs, and model architectures, were not varied.
+
+As future work, we plan to enrich our benchmark tool by addressing the above
+limitations and find further insights. We hope that our benchmark tool and
+experimental results help to develop and evaluate new federated learning methods.
+
+This work was supported by JST PRESTO Grant Number JPMJPR21C5 and JSPS KAKENHI Grant Number JP20H00584 and JP17H06099, Japan.
+
+Detailed statistics for the datasets used in our experiments are shown in Table8.
+
+The details of the model used in our experiments are shown in Tables9–13.
+
+We show the hyper-parameters that we used in our experimental study.
+We generally follow the hyper-parameter settings of original papers that each method has been proposed.
+
+All methods.The common hyper-parameters of all methods are listed as follows:
+
+Momentum:0.90.90.9
+
+Weight decay:10−4superscript10410^{-4}
+
+Max norm of the gradients:202020
+
+Batch size
+
+For FEMNIST: 20
+
+For Shakespeare: 20
+
+For Sent140: 40
+
+For MNIST: 10
+
+For CIFAR-10: 4
+
+Learning rate: See Table14.
+
+We here note that the learning rates were tuned in{10−3,10−2.5,10−2,10−1.5,10−1,100.5,100,100.5}superscript103superscript102.5superscript102superscript101.5superscript101superscript100.5superscript100superscript100.5\{10^{-3},10^{-2.5},10^{-2},10^{-1.5},10^{-1},10^{0.5},10^{0},10^{0.5}\}for each dataset and method.
+
+The followings are the method-specific hyper-parameters.
+
+FedProx.The hyper-parameters of FedProx are listed as follows:
+
+Parameter to control the regularization termμ𝜇\mu:0.0010.0010.001
+
+HypCluster.The hyper-parameters of HypCluster are listed as follows:
+
+The number of clustersk𝑘k:222
+
+FedMe.The hyper-parameters of FedMe are listed as follows:
+
+The numbers of global communication rounds to increase the number of clusters
+
+For FEMNIST: 150, 225, and 275
+
+For Shakespeare: 50, 75, and 90
+
+For Sent140: 25, 50, and 75
+
+For MNIST: 50, 100, and 150
+
+For CIFAR-10: 250, 375, and 450
+
+The number of unlabeled data: 1000
+
+LG-FedAvg.The hyper-parameters of LG-FedAvg are listed as follows:
+
+Sub-models of the server and the clients
+
+For FEMNIST, Shakespeare, Sent140, and MNIST
+
+The last linear layer
+
+The all layers except for the last linear layer
+
+For CIFAR-10
+
+The all linear layers
+
+The all convolutional layers
+
+FedPer.The hyper-parameters of FedPer are listed as follows:
+
+Sub-models of the server and the clients
+
+For FEMNIST, Shakespeare, Sent140, and MNIST
+
+The all layers except for the last linear layer
+
+The last linear layer
+
+For CIFAR-10
+
+The all convolutional layers
+
+The all linear layers
+
+FedRep.The hyper-parameters of FedRep are listed as follows:
+
+The number of epochs to train sub-models:222for each of sub-models
+
+Sub-models of the server and the clients
+
+For FEMNIST, Shakespeare, Sent140, and MNIST
+
+The all layers except for the last linear layer
+
+The last linear layer
+
+For CIFAR-10
+
+The all convolutional layers
+
+The all linear layers
+
+Ditto.The hyper-parameters of Ditto are listed as follows:
+
+Parameter to control the interpolation between global and personalized modelsλ𝜆\lambda:0.750.750.75
+
+pFedMe.The hyper-parameters of pFedMe are listed as follows:
+
+Parameter to control the regularization termλ𝜆\lambda:151515
+
+The number of repetitions of batch trainsK𝐾K:555
+
+[图片: images\image_9.png]
+
+[图片: images\image_10.png]
+

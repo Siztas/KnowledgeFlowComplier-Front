@@ -1,0 +1,78 @@
+标题：AI-Mediated Exchange Theory
+
+rightsretained\isbn978-1-4503-6819-3/20/04\copyrightinfo\acmcopyright
+
+As Artificial Intelligence (AI) plays an ever-expanding role in sociotechnical systems, it is important to articulate the relationships between humans and AI.
+However, the scholarly communities studying human-AI relationships — including but not limited to social computing, machine learning, science and technology studies, and other social sciences — are divided by the perspectives that define them.
+These perspectives vary both by their focus on humans or AI, and in the micro/macro lenses through which they approach subjects.
+These differences inhibit the integration of findings, and thus impede science and interdisciplinarity.
+In this position paper, we propose the development of a frameworkAI-Mediated Exchange Theory(AI-MET) to bridge these divides.
+As an extension to Social Exchange Theory (SET) in the social sciences, AI-MET views AI as influencing human-to-human relationships via a taxonomy ofmediation mechanisms. We list initial ideas of these mechanisms, and show how AI-MET can be used to help human-AI research communities speak to one another.
+
+<ccs2012>
+<concept>
+<concept_id>10003120.10003130.10003131</concept_id>
+<concept_desc>Human-centered computing Collaborative and social computing theory, concepts and paradigms</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+</ccs2012>
+
+[500]Human-centered computing Collaborative and social computing theory, concepts and paradigms
+
+Relationships between humans and Artificial Intelligence (AI) are receiving increased attention across different research communities, driven by wide deployment of AI systems in the real world and increased awareness of the potential issues such deployment could bring.
+Although there are many different ways of defining AI, here we use AI to refer to “the designing and building of intelligent agents that receive percepts from the environment and take actions that affect that environment”[12].
+The human-AI research communities include but are not limited to: social computing (e.g., CHI, CSCW), Science and Technology Studies (STS), machine learning (e.g., fairness in machine learning[13]), and the social sciences — especially the emerging Computational Social Science (CSS).
+Due to the interdisciplinary nature of the human-AI problem, communication across these research communities is necessary to drive scientific advancements that benefit both humans and AI.
+
+Although often overlapping in topics of study (e.g., algorithmic ranking in social media news feeds), these research communities sometimes hold different perspectives on how human and AI systems are organized, which creates challenges when attempts are made to communicate or integrate findings.
+We can view the different perspectives of these communities as spread along two axes: (1) humans/AI and (2) micro/macro.
+The first axis describes whether the research focuses more on understanding or designing for humans in sociotechnical systems, or more on building and improving the AI systems involved.
+The second axis describes the level of abstraction of humans — research at the micro end focuses more on individual interactions (e.g., how an individual interacts with the algorithms in social media feeds), while research at the macro end of the axis focuses on larger social structural processes (e.g., how do algorithms affect markets, healthcare, or the concept of justice in law?).
+
+Although in many cases research perspectives don’t lie cleanly at the ends of the axes, we can often find example “pairs” of projects from different research communities that spread out along the poles, even if they address the same topic.
+For instance, on the human-side of the first axis, Eslami et al. presents a qualitative interview study on how users perceive Facebook news feed ranking[6].
+By contrast, most work on recommendation systems lies closer to the AI-end of the axis, focusing on the development of algorithms using large-scale datasets to optimize for specific algorithmically-relevant and statistically defined measures (e.g., Twitter news feed ranking that might optimize for engagement[11]).
+For the micro/macro axis, Kizilcec conducted a user study to show how transparency affects trust in algorithms in peer-to-peer evaluation settings, which focused on the micro behavior of individuals[8].
+By contrast, the discussion around regulation on algorithmic transparency of algorithms is often more macro-level, from the perspective of philosophy and the social sciences[10,9].
+
+The spread of different research perspectives on the humans/AI and micro/macro axes creates gaps in the inter-community learning and collaboration.
+It is not immediately obvious how research lying at different coordinates can learn from each other.
+The topography of the different research perspective spread along the humans/AI and micro/macro axes entails gaps that trouble their ability to communicate and collaborate, despite the common call for interdisciplinary approaches[13,3].
+In an ideal world, practitioners building AI systems would bear human factors, including user behavior and ethics, in mind.
+They would consider the risks and the benefits of an algorithm on people’s lives.
+Likewise, scholars of modern social systems would consider the role of AI — especially when data are gathered from an online platform in which AI systems affect how people behave.
+Such an ideal world would also see micro-level research, such as specific studies in HCI, effectively informing macro-level research, such as law and policy.
+Falling short of such research integrations holds the potential for serious societal consequences[2], while successfully doing so may lead to benefits for both science and society[7].
+
+For the reasons listed above, there is tremendous value in creating a theoretical framework that applies equally across the humans/AI and micro/macro axes.
+This position paper proposes the development ofAI-Mediated Exchange (AI-MET)as that framework.
+As an extension to Social Exchange Theory (SET) — a well-established theory in the social sciences — AI-MET is not an attempt to develop yet another area of research.
+Rather, it is proposed as a framework through which the several existing communities of research on the topic of human-AI interaction can speak to one other.
+
+Traditionally, SET envisions society as a configuration of exchange relationships between actors, be they individuals or institutions[4].
+There are two types of exchange in SET,directandgeneralized, which we go into in more detail throughout the extended version of our paper.
+Together, the direct and generalized forms of exchange link micro-level social interactions to macro-level concepts such as power, communal resilience, and trust[5].
+For our work, we reap this benefit of micro/macro bridging in SET, and extend it by inserting AI as a mediator of human social exchange relationships, thereby also bridging the humans/AI divide previously discussed.
+
+The core of the proposed AI-MET framework is a taxonomy of AI mediation mechanisms, which we derived from a qualitative coding of human-AI literature.
+We show that this taxonomy can be used to clarify the role of AI in mediating social exchanges.
+We then apply AI-MET to concrete examples (social media feed ranking as an example of generalized exchange, and algorithmic hiring as an example of direct exchange) to demonstrate the utility of AI-MET as a means integrating human-AI research communities.
+
+[图片: images\image_1.png]
+图片说明: Figure 1:Theoretical illustration of Social Exchange Theory (left) and AI-Mediated Exchange Theory (right)
+
+The theoretical setup of the AI-Mediated Exchange Theory is conceptually simple.
+Social Exchange Theory states that the world can be viewed as a series of exchange relationships, as illustrated on the left side ofFigure 1.
+Each node represents a social actor, and edges represent a specific type of exchange/interaction.
+These exchanges could be financial, informational, or simply relational, such as friendships.
+Three nodes represent the minimal setup for “group generalized exchange”, where people pool resources together to produce greater value, and then redistribute the resources at a later time, such as in communities and small social groups.
+AI-Mediated Exchange Theory, depicted on the right side ofFigure 1, shows how AI systems can be incorporated into these social exchange systems by mediating social exchange relationships.
+The nodes “AI” here represents an autonomous system that can act with agency and affect the environment it is in[12].
+
+In conclusion, this position paper sets up the motivation for extending Social Exchange Theory (SET) into AI-Mediated Exchange Theory (AI-MET), which we will fully develop in an extended paper.
+With the full theoretical framework and concrete mediation mechanisms derived from qualitative work (e.g., AI curation and AI matching), AI-Mediated Exchange Theory can help explain how AI mediates social exchange in sociotechnical systems, as well as allow various human-AI research communities to integrate.
+
+[图片: images\image_2.png]
+
+[图片: images\image_3.png]
+

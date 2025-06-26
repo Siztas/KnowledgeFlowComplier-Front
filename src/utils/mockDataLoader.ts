@@ -1,6 +1,8 @@
 "use client";
 
 import { mockArticles as defaultArticles, mockTrendingArticles } from './mockData';
+import { PUBLIC_IMAGE_PATH } from './env';
+import { setPublicImagePrefix } from './imagePathProcessor';
 
 /**
  * 加载模拟数据
@@ -8,6 +10,18 @@ import { mockArticles as defaultArticles, mockTrendingArticles } from './mockDat
  */
 export function loadMockData() {
   if (typeof window === 'undefined') return;
+  
+  // 设置公共图片路径前缀
+  try {
+    const savedPublicPath = localStorage.getItem("mock_public_image_path");
+    if (savedPublicPath) {
+      setPublicImagePrefix(savedPublicPath);
+    } else if (PUBLIC_IMAGE_PATH) {
+      setPublicImagePrefix(PUBLIC_IMAGE_PATH);
+    }
+  } catch (e) {
+    console.warn("Failed to load public image path configuration", e);
+  }
   
   // 尝试从localStorage加载文章数据
   try {

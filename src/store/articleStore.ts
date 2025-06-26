@@ -13,7 +13,7 @@ interface ArticleState {
   // 数据状态
   articles: Article[];
   shelfArticles: ShelfArticle[];
-  selectedArticle: Article | null;
+  selectedArticle: Article | SearchResult | null;
   searchQuery: string;
   isSearching: boolean;
   searchResults: SearchResult[];
@@ -30,8 +30,8 @@ interface ArticleState {
   searchError: string | null;
   
   // 文章操作
-  setSelectedArticle: (article: Article | null) => void;
-  addToShelf: (article: Article) => Promise<void>;
+  setSelectedArticle: (article: Article | SearchResult | null) => void;
+  addToShelf: (article: Article | SearchResult) => Promise<void>;
   removeFromShelf: (id: string) => Promise<void>;
   isArticleInShelf: (id: string) => boolean;
   
@@ -187,6 +187,7 @@ export const useArticleStore = create<ArticleState>()(
               title: article.title,
               imageUrl: article.imageUrl,
               summary: article.content.substring(0, 150) + '...',
+              content: article.content,
               relevanceScore: Math.random() * 0.5 + 0.5, // 模拟0.5-1.0的相关度分数
               tags: article.tags || []
             }));

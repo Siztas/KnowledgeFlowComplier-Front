@@ -1,0 +1,207 @@
+标题：Survey of Privacy Threats andCountermeasures in Federated Learning
+
+Federated learning is widely considered to be as a privacy-aware learning method because no training data is exchanged directly between clients. Nevertheless, there are threats to privacy in federated learning, and privacy countermeasures have been studied. However, we note that common and unique privacy threats among typical types of federated learning have not been categorized and described in a comprehensive and specific way. In this paper, we describe privacy threats and countermeasures for the typical types of federated learning; horizontal federated learning, vertical federated learning, and transfer federated learning.
+
+As computing devices become more ubiquitous, people generate vast amounts of data in their daily lives. Collecting this data in centralized storage facilities is costly and time-consuming[1]. Another important concern is user privacy and confidentiality, as usage data typically contains sensitive information. Sensitive data such as biometrics and healthcare can be used for targeted social advertising and recommendations, posing immediate or potential privacy risks. Therefore, private data should not be shared directly without any privacy considerations. As societies become more privacy-conscious, legal restrictions such as the General Data Protection Regulation (GDPR) and the EU AI ACT are emerging, making data aggregation practices less feasible. In this case, federated learning has emerged as a promising machine learning technique where each client learns and sends the information to a server.
+
+Federated learning has attracted attention as a privacy-preserving machine learning technique because it can learn a global model without exchanging private raw data between clients. However, federated learning still poses a threat to privacy. Recent works have shown that federated learning may not always provide sufficient privacy guarantees, since the communication of model updates throughout the training process may still reveal sensitive information, even to a third party or to the central server[1]. Typical examples of federated learning include horizontal federated learning where features are common, vertical federated learning where IDs are common, and federated transfer learning where some features or IDs are common. However, we note that common and unique privacy threats among each type of federated learning have not been categorized and described in a comprehensive and specific way.
+
+For example, in the case of horizontal federated learning, semi-honest server can infer client’s data by inference attacks on a model sent by the client. If the client is an attacker, the attacker can infer the data of other clients by inference attacks on a global model received from the server. Such an attack is possible because the global model is design to reflect the data of all clients. If the attacker is a third party that is neither a server nor a client, it can eavesdrop on models passing through the communication channel and infer client data through inference attacks. In vertical federated learning, the main threat to privacy is the identify leakage through identity matching between clients. In addition, since the intermediate outputs of a model are sent to the server, there is a possibility that client data can be inferred through an inference attack. Also, as in horizontal federated learning, client data can be inferred by an inference attack on the server. Finally, in federated transfer learning, member and attribute guessing attacks are possible by exploiting a prediction network. If IDs are common, gradient information is exchanged when features are made similar. Therefore member and attribute guessing attacks are possible by using gradient information. When there are common features among clients, attribute guessing attacks are possible by exploiting networks that complement the missing features from the common features.
+
+In this paper, we discuss the above threats to privacy in detail and countermeasures against privacy threats in three types of federated learning; horizontal federated learning, vertical federated learning, and federated transfer learning. The paper is organized as follows: Section 2 presents learning methods for horizontal federated learning, vertical federated learning, and federated transfer learning; Section 3 discusses threats to privacy in each federated learning; Section 4 discusses countermeasures against privacy threats in each federated learning; and Section 5 concludes.
+
+Based on the data structures among clients, federated learning is categorized into three types as first introduced by Yang et al.[2]: horizontal federated learning (HFL), vertical federated learning (VFL), and federated transfer learning (FTL). Figure1shows the data structure among clients for each type of federated learning. HFL assumes that each client has the same features and labels but different samples (Figure1(a)). On the other hand, VFL assumes that each client has the same samples but disjoint features (Figure1(a)). Finally, FTL applies to the scenario where each of the two clients has data that differ in not only samples but also features (Figure1(c)).
+
+In the following subsections, we describe the learning and prediction methods for each type of federated learning.
+
+[图片: images\image_1.png]
+图片说明: (a)Horizontal federated learning.
+
+[图片: images\image_2.png]
+图片说明: (a)Horizontal federated learning.
+
+[图片: images\image_3.png]
+图片说明: (a)Horizontal federated learning.
+
+HFL is the most common federated learning category which was first introduced by Google[3]. The goal of HFL is for each client holding different samples to collaboratively improve the accuracy of a model with a common structure.
+
+Figure2shows an overview of the HFL learning protocol. Two types of entities participate in learning of HFL:
+
+Server- Coordinator. Server exchanges model parameters with the clients and aggregates model parameters received from the clients.
+
+Clients- Data owners. Each client locally trains a model using their own private data and exchanges model parameters with the server.
+
+Each clients first trains a local model for a few steps and sends the model parameters to the server. Next, the server updates a global model by aggregating (in standard methods such as FedAvg, simply averaging) the local models and sends it to all clients. This process is repeated until the convergence. During inference time, each client separately predicts the label using a global model and its own features.
+
+The protocol described above is called centralized HFL because it requires a trusted third party, a central server. On the other hand, decentralized HFL, which eliminates the need for a central server, has emerged in recent years[4]. In decentralized HFL, clients directly communicates with each other, resulting in communication resource savings. There are various possible methods of communication between clients[4]. For example, the most common method for HFL of gradient boosting decision trees is for each client to add trees to the global model by sequence[5,6,7].
+
+[图片: images\image_4.png]
+图片说明: Figure 2:Overview of the HFL learning protocol.
+
+VFL enables clients holding the different features of the same samples to collaboratively train a model which takes all of the various features each client has as input. There are VFL studies to deal with various models including linear/logistic regression[8,9,10,11,12], decision trees[13,14,15,16,17], neural networks[18,19,20,21], and other non-linear models[22,23].
+
+Figure3shows an overview of the standard VFL learning protocol. In VFL, only one client holds labels and it plays the role of a server. Therefore, two types of entities participate in learning of VFL:
+
+Active client- Features and labels owner. Active client coordinates the learning procedure. It calculates the loss and exchanges intermediate results with the passive clients.
+
+Passive clients- Features owners. Each passive client keeps both its features and model local but exchanges intermediate results with the active client.
+
+VFL consists of two phases: IDs matching and learning phases. In IDs matching phases, all clients shares the common sample IDs. In learning phase, each client has a separate model with its own features as input, and the passive clients send the computed intermediate outputs to the active client. The active client calculates the loss based on the aggregated intermediate outputs and sends the gradients to all passive clients. Then, the passive clients updates its own model parameters. This process is repeated until the convergence. During inference time, all clients need to cooperate to predict the label of a sample.
+
+[图片: images\image_5.png]
+图片说明: Figure 3:Overview of the standard VFL learning protocol.
+
+FTL assumes two clients that shares only a small portion of samples or features. The goal of FTL is to create a model that can predict labels on the client that does not possess labels (target client), by transferring the knowledge of the other client that does possess labels (source client) to the target client.
+
+Figure4shows an overall of the FTL learning protocol. As noted above, two types of entities participate in FTL:
+
+Source client- Features and labels owner. Source client exchanges intermediate results such as outputs and gradients with the target client and calculates the loss.
+
+Target client- Features owners. Target client exchanges intermediate results with the source client.
+
+In FTL, two clients exchange intermediate outputs to learn a common representation. The source client uses the labeled data to compute the loss and sends the gradient to the target client, which updates the target client’s representation. This process is repeated until the convergence. During inference time, the target client predicts the label of a sample using its own model and features.
+
+The detail of the learning protocol varies depending on the specific method. Although only a limited number of FTL methods have been proposed, we introduce three major types of methods. FTL requires some supplementary information to bridge two clients, such as common IDs[24,25,26,27], common features[28,29], and labels of target client[30,31].
+
+Most FTL methods assumes the existence of the common ID’s samples between two clients. This type of FTL requires ID matching before the learning phase as with VFL. Liu et al.[24]proposed the first FTL protocol, which learns feature transformation functions so that the different features of the common samples are mapped into the same features. The following work by Sharma et al.[25]improved communication overhead of the first FTL using multi-party computation and enhanced the security by incorporating malicious clients. Gao et al.[27]proposed a dual learning framework in which two clients impute each other’s missing features by exchanging the outputs of the imputation models for the common samples.
+
+In real-world applications, it is difficult to share samples with the same IDs. Therefore, Gao et al.[28]proposed a method to realize FTL by assuming common features instead of common samples. In that method, two clients mutually reconstruct the missing features by using exchanged feature mapping models. Then,using all features, the clients conduct HFL to obtain a label prediction model. In the original paper, the authors assumes that all clients posses labels, but this method is applicable to the target client that does not posses labels because the source client can learn the label prediction model only by itself. Mori et al.[29]proposed a method for neural networks in which each client incorporates its own unique features in addition to common features into HFL training. However, their method is based on HFL and cannot be applied to the target clients that does not possess labels.
+
+This type of methods assumes neither common IDs nor features, but instead assumes that all clients possess labels, allowing a common representation to be learned across clients. Since it is based on HFL, the participating entities are the same as in HFL. Gao et al.[30]learns a common representation by exchanging the intermediate outputs with the server and reducing maximum mean discrepancy loss. Rakotomamonjy et al.[31]proposed a method to learn a common representation by using Wasserstein distance for intermediate outputs, which enables that the clients only need to exchange statistical information such as mean and variance with the server.
+
+[图片: images\image_6.png]
+图片说明: Figure 4:Overall of the FTL learning protocol.
+
+In this section, we describe threats to privacy in each federated learning. TableIshows threads to privacy addressed in each federated learning. An inference attack uses data analysis to gather unauthorized information about a subject or database. If an attacker can confidently estimate the true value of a subject’s confidential information, it can be said to have been leaked. The most frequent variants of this approach are membership inference and feature[32]. In addition, we address privacy threats of label inference and ID leakage.
+
+In HFL, client data is a major threat to privacy. Figure5shows threats to privacy in HFL. Possible attackers are as follows:
+
+Server:
+Inference attack against the model to infer client data.
+
+Clients:
+Inference attack against the global model received from the server to infer other clients’ data.
+
+Third party:
+Eavesdrop on models that pass through the communication channel and infer client data through inference attacks.
+
+[图片: images\image_7.png]
+图片说明: Figure 5:Threats to privacy in HFL.
+
+In VFL, a major threat to privacy is the leakage of identities due to identity matching between clients[33]. In addition to the leakage of identities, partial output from clients is also a threat. In case of ID matching, in order to create a single model for the overall system, it is necessary to match IDs that are common to each client’s data. This will reveal the presence of the same user to other clients.
+Figure6shows threats to privacy in VFL in case of partial output from clients, and possible attackers are as follows:
+
+Active client:
+Inference attack against the output of lower model to infer client data.
+
+Passive Clients:
+Inference attack against the output of upper model received from the active client to infer other clients’ data.
+
+Third party:
+Eavesdrop on outputs that pass through the communication channel and infer client data through inference attacks.
+
+[图片: images\image_8.png]
+图片说明: Figure 6:Threads to privacy in VFL.
+
+In federated transfer learning, threats to privacy vary depending on the information in common[24]. We explain the case when features are common and when IDs are common, respectively.
+
+Figure7shows threats to privacy in case of common features in FTL, and possible attackers are as follows:
+
+Client receiving a feature analogy network:
+Inference attack against feature analogy network to infer client data.
+
+Client receiving a feature analogy network and prediction network:
+Inference attack against feature analogy network and prediction network to infer client data.
+
+Third party:
+Eavesdrop on feature analogy network and prediction network pass through the communication channel and infer client data through inference attacks.
+
+[图片: images\image_9.png]
+图片说明: Figure 7:Threats to privacy in case of common features in FTL.
+
+In case of Common IDs, a threat to privacy is the leakage of identities due to identity matching between clients as shown in VFL[33]. In addition to the leakage of identities, information required for feature similarity from clients is also a threat.
+Figure8shows threats to privacy in case of common IDs in FTL in case of information required for feature similarity, and possible attackers are as follows:
+
+Client receiving information for feature similarity:
+Inference attack against information required for feature similarity to infer client data.
+
+Third party:
+Eavesdrop on information required for feature similarity pass through the communication channel and infer client data through inference attacks.
+
+[图片: images\image_10.png]
+图片说明: Figure 8:Threads to privacy in case of common IDs in FTL.
+
+In this section, we describe countermeasures against threats to privacy in each federated learning. TableIIshows countermeasures against privacy threats addressed in each federated learning. Despite the wide variety of previous efforts to secure privacy in federated learning, the proposed methods typically fall into one of these categories: differential privacy, secure computation, encryption of communication, and ID dummying[32].
+
+In HFL, a typical privacy measure for client data is to protect attacks by the server side with secure computation and attacks by the client side with differential privacy[34]. Figure9shows countermeasures against threads to privacy in HFL. The position of the attacker by these privacy measures is described as follows.
+
+Server:
+Secure computation realizes global model integration calculations without seeing the model by the server[35,36]
+
+Client:
+Client A creates a model by adding noise through differential privacy[37,38]. Client B receives the parameters of the global model via the server, but Client A’s model is protected by differential privacy.
+
+Third party:
+Achieved by encryption of communication.
+
+[图片: images\image_11.png]
+图片说明: Figure 9:Countermeasures against threads to privacy in HFL.
+
+In VFL, the threads to privacy are the leakage of identities and partial output from clients. We show how to respond in the case of each threat.
+
+In case of IDs matching, Dummy IDs are prepared in addition to the original IDs[39]. For the dummy part of the ID, dummy variables that have no effect on learning are sent. Figure10shows an example of dummy IDs.
+Before dummy IDs are used, all IDs that match Client A are known to Client B (cf. ID 3,4). After dummy IDs are used, Client B does not know which of the IDs that match Client A is the real ID of Client A.
+
+[图片: images\image_12.png]
+图片说明: Figure 10:Example of dummy IDs.
+
+In case of output from clients, the typical privacy measure is the use of secure calculations[33]. Figure11shows countermeasures against threads in case of output from clients. The position of the attacker by these privacy measures is described as follows.
+
+Active Client:
+Secure computation realizes global model integration calculations without seeing the model by the active client.[35].
+
+Passive Clients:
+Client B receives the information used for updating from the upper model via the active client, but it is protected by secure computation.
+
+Third party:
+Achieved by encryption of communication.
+
+[图片: images\image_13.png]
+图片说明: Figure 11:Countermeasures against threads in case of output from clients.
+
+In FTL, the threads to privacy depend on common information between clients[24]. We show how to respond in the case of each thread.
+
+In case of common features, the threads to privacy are exchanges of feature analogy network and prediction network.
+Figure12shows countermeasures against threads in case of common features.
+
+Client receiving a feature analogy network:
+Differential privacy makes it difficult to infer the model[37].
+
+Client receiving a feature analogy network and prediction network:
+Differential privacy makes it difficult to infer the model.
+
+Third party:
+Achieved by encryption of communication.
+
+[图片: images\image_14.png]
+图片说明: Figure 12:Countermeasures against threads in case of common features.
+
+In case of common IDs, the threads to privacy are the leakage of identities and information required for feature similarity[24]. For the leakage of identities, Dummy IDs are prepared in addition to the original IDs as shown in SectionIV-B1[39]. For information required for feature similarity, figure13shows countermeasures against threads in case of common IDs.
+
+Client receiving information for feature similarity:
+Difficult to guess information due to secure computation[35].
+
+Third party:
+Achieved by encryption of communication.
+
+[图片: images\image_15.png]
+图片说明: Figure 13:Countermeasures against threads in case of common IDs.
+
+In this paper, we have described privacy threats and countermeasures for federated learning in terms of HFL, VFL, and FTL. Privacy measures for federated learning include differential privacy to reduce the leakage of training data from the model, secure computation to keep the model computation process secret between clients and servers, encryption of communications to prevent information leakage to third parties, and ID dummying to prevent ID leakage.
+
+This R&D includes the results of ” Research and development of optimized AI technology by secure data coordination (JPMI00316)” by the Ministry of Internal Affairs and Communications (MIC), Japan.
+
+[图片: images\image_16.png]
+
+[图片: images\image_17.png]
+

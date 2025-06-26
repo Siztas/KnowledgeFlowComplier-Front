@@ -1,0 +1,312 @@
+标题：HP-GNN: Generating High ThroughputGNNTraining Implementation on CPU-FPGAHeterogeneousPlatform
+
+Graph Neural Networks (GNNs) have shown great success in many applications such as recommendation systems, molecular property prediction, traffic prediction, etc.
+Recently, CPU-FPGA heterogeneous platforms have been used to accelerate many applications by exploiting customizable data path and abundant user-controllable on-chip memory resources of FPGAs.
+Yet, accelerating and deploying GNN training on such platforms requires not only
+expertise in hardware design but also substantial development efforts.
+
+We propose HP-GNN, a novel framework that generates high throughput GNN training implementations on a given CPU-FPGA platform that can benefit both application developers and machine learning researchers.
+HP-GNN takes GNN training algorithms, GNN models as the inputs, and automatically performs hardware mapping onto the target CPU-FPGA platform.
+HP-GNN consists of: (1) data layout and internal representation that reduce the memory traffic and random memory accesses; (2) optimized hardware templates that support various GNN models; (3) a design space exploration engine for automatic hardware mapping; (4) high-level application programming interfaces (APIs) that allows users to specify GNN training with only a handful of lines of code.
+To evaluate HP-GNN, we experiment with two well-known sampling-based GNN training algorithms and two GNN models. For each training algorithm and model, HP-GNN generates implementation on a state-of-the-art CPU-FPGA platform.
+Compared with CPU-only and CPU-GPU platforms, experimental results show that the generated implementations achieve55.67×55.67\timesand2.17×2.17\timesspeedup on the average, respectively. Compared with the state-of-the-art GNN training implementations, HP-GNN achieves up to4.45×4.45\timesspeedup.
+
+Recently, Graph Neural Networks (GNNs) have shown great success in many fields including recommendation systems(Ying et al.,2018; Zhu et al.,2019), molecular property prediction(Hamilton
+et al.,2017), traffic prediction(Jiang and Luo,2021), etc.
+Initially, GNN was trained using the full graph(Kipf and Welling,2017)as the input, directly. However, as graphs become larger, full-graph GNN training becomes inefficient because the model is only updated once for each epoch. Moreover, huge amount of intermediate results needs to be stored in full-graph GNN training, which leads to high memory footprint(Liu
+et al.,2021). To overcome the above issues, many sampling-based GNN training algorithms(Hamilton
+et al.,2017; Zeng et al.,2020; Chen
+et al.,2018; Chiang
+et al.,2019)have been proposed for training the GNN models. Sampling-based methods first sample the full graph to produce mini-batches, and then take these mini-batches as input for training.
+The sampling-based mini-batch training methods demonstrate great advantages compared with full-graph training in terms of accuracy, generalization, and scalability for large-scale graphs(Hamilton
+et al.,2017; Zeng et al.,2020; Chen
+et al.,2018; Chiang
+et al.,2019). Therefore, state-of-the-art GNN frameworks(Fey and Lenssen,2019; Wang et al.,2019)adopt sampling-based mini-batch training algorithms.
+
+Compared with the CPU-only platforms or CPU-GPU platforms, CPU-FPGA platforms are promising platforms to deploy GNN training since this can support customized memory access pattern(Zhou et al.,2019)and data layout to reduce the substantial memory traffic and random memory access in GNN training.
+However, deploying GNN training on CPU-FPGA heterogeneous platform is challenging due to notorious development efforts that requires hardware design expertise.
+Though there are many FPGA-based GNN accelerators(Yan et al.,2020; Zhang
+et al.,2021,2020; Geng et al.,2020; Lin
+et al.,2021), previous works either focus on full-graph GNN inference, or a specific GNN model, or a specific GNN training algorithm, and no general framework has been proposed.
+
+Motivated by the challenges, we propose HP-GNN, a framework for mapping GNN training on CPU-FPGA heterogeneous platform.
+We first formulate an high-level abstraction to describe the computation of sampling-based mini-batch GNN training. Then we develop optimized hardware templates based on the GNN abstraction.
+In order to reduce development effort and eliminate the need for hardware expertise, HP-GNN provides easy-to-use software programming APIs that allow fast development without the need for hardware programming.
+To achieve high throughput and automate the accelerator generation process, we develop a general design space exploration engine that optimizes the hardware configuration based on the selected GNN training algorithm. In addition, we propose a data layout and internal representation that reduces the memory traffic and random memory access. We summarize our contributions as follow:
+
+We propose a general framework for mapping various sampling based mini-batch GNN training onto a CPU-FPGA platform. We demonstrate the applicability of HP-GNN to various sampling algorithms and GNN models.
+
+We provide high-level and easy-to-use software programming interface that abstracts the hardware implementation details.
+
+To enable hardware mapping and high throughput GNN training, the proposed framework consists of the following optimizations:
+
+Data layout and internal representation that reduce the memory traffic and random memory access caused by the irregular computation pattern of GNN.
+
+Optimized hardware templates that support various widely-used GNN models.
+
+General design space exploration algorithm that generates hardware design configuration to optimize the training throughput for various sampling methods and algorithmic parameters.
+
+We evaluate our framework using two state-of-the-art GNN models: GraphSAGE(Hamilton
+et al.,2017), GCN(Kipf and Welling,2017), along with two commonly used sampling methods: neighbor sampling(Hamilton
+et al.,2017), and subgraph sampling(Zeng et al.,2020). Running on a Xilinx Alveo U250 board hosted by a 64-core AMD processor, the experimental results show that the accelerators produced by our framework can achieve2.17×2.17\timesthroughput on the average compared with a state-of-the-art GNN framework on CPU-GPU platform.
+
+[图片: images\image_1.png]
+图片说明: Figure 1.Computation abstraction of a GNN layer
+
+Given an input graph𝒢​(𝒱,ℰ,𝑿)𝒢𝒱ℰ𝑿\mathcal{G}(\mathcal{V},\mathcal{E},\bm{X}), a GNN model is specified by:
+
+L𝐿L: number of layers.
+
+𝒱tsuperscript𝒱𝑡\mathcal{V}^{t}: a set of target vertices to be inferred.
+
+flsuperscript𝑓𝑙f^{l}: hidden dimension in layerl​(1⩽l⩽L)𝑙1𝑙𝐿l~{}(1\leqslant l\leqslant L).
+
+A mechanism of how to construct:
+
+𝒱lsuperscript𝒱𝑙\mathcal{V}^{l}: the set of vertices in layerl​(0⩽l⩽L)𝑙0𝑙𝐿l~{}(0\leqslant l\leqslant L).|𝒱l|superscript𝒱𝑙|\mathcal{V}^{l}|denotes the number of vertices in layerl𝑙l. Moreover,𝒱L=𝒱tsuperscript𝒱𝐿superscript𝒱𝑡\mathcal{V}^{L}=\mathcal{V}^{t}.
+
+𝑨l∈ℝ|𝒱l−1|×|𝒱l|superscript𝑨𝑙superscriptℝsuperscript𝒱𝑙1superscript𝒱𝑙\bm{A}^{l}\in\mathbb{R}^{{|\mathcal{V}^{l-1}|}\times{|\mathcal{V}^{l}|}}: adjacency matrix for feature aggregation in layerl​(1⩽l⩽L)𝑙1𝑙𝐿l~{}(1\leqslant l\leqslant L).𝑨lsuperscript𝑨𝑙\bm{A}^{l}defines the inter-layer connectivity between𝒱l−1superscript𝒱𝑙1\mathcal{V}^{l-1}and𝒱lsuperscript𝒱𝑙\mathcal{V}^{l}.
+
+𝑾l∈ℝfl−1×flsuperscript𝑾𝑙superscriptℝsuperscript𝑓𝑙1superscript𝑓𝑙\bm{W}^{l}\in\mathbb{R}^{f^{l-1}\times f^{l}}: weight matrix of layerl​(1⩽l⩽L)𝑙1𝑙𝐿l~{}(1\leqslant l\leqslant L)that is used in update function to perform linear transformation of vertex features.
+
+𝑿l∈ℝ|𝒱l|×flsuperscript𝑿𝑙superscriptℝsuperscript𝒱𝑙superscript𝑓𝑙\bm{X}^{l}\in\mathbb{R}^{{|\mathcal{V}^{l}|}\times f^{l}}: feature matrix of layerl​(1⩽l⩽L)𝑙1𝑙𝐿l~{}(1\leqslant l\leqslant L)
+
+Aggregate() function that is used by each vertex to aggregate information from its neighbors.
+
+Update() function including an one-layer multi-layer perception (MLP) and an activation functionσ𝜎\sigma() that is used by each vertex to perform feature transformation.
+
+Figure1depicts the computation abstraction of a GNN layer. The computations using a GNN model can also be expressed using the aggregate-update paradigm(Yan et al.,2020), as shown in Algorithm1.𝒉vl∈ℝflsuperscriptsubscript𝒉𝑣𝑙superscriptℝsuperscript𝑓𝑙\bm{h}_{v}^{l}\in\mathbb{R}^{f^{l}}is the feature vector ofv∈ℬl𝑣superscriptℬ𝑙v\in\mathcal{B}^{l}in layerl𝑙l, and𝒂vl∈ℝflsuperscriptsubscript𝒂𝑣𝑙superscriptℝsuperscript𝑓𝑙\bm{a}_{v}^{l}\in\mathbb{R}^{f^{l}}is the intermediate result ofv∈ℬl𝑣superscriptℬ𝑙v\in\mathcal{B}^{l}.
+
+There are several widely used GNN models proposed in the literature:
+
+GCN: GCN is proposed in(Kipf and Welling,2017). Given the input graph𝒢​(𝒱,ℰ,𝑿)𝒢𝒱ℰ𝑿\mathcal{G}(\mathcal{V},\mathcal{E},\bm{X}), the GCN model is specified by:
+
+𝒱1=𝒱2=…=𝒱L=𝒱T=𝒱superscript𝒱1superscript𝒱2…superscript𝒱𝐿superscript𝒱𝑇𝒱\mathcal{V}^{1}=\mathcal{V}^{2}=...=\mathcal{V}^{L}=\mathcal{V}^{T}=\mathcal{V}
+
+𝑨1=𝑨2=…=𝑨L=𝑫−12​(𝑨+𝑰)​𝑫−12superscript𝑨1superscript𝑨2…superscript𝑨𝐿superscript𝑫12𝑨𝑰superscript𝑫12\bm{A}^{1}=\bm{A}^{2}=...=\bm{A}^{L}=\bm{D}^{-\frac{1}{2}}(\bm{A}+\bm{I})\bm{D}^{-\frac{1}{2}}, where𝑨𝑨\bm{A}and𝑫𝑫\bm{D}are the adjacency matrix and the Laplacian matrix of the input graph.𝑰𝑰\bm{I}is the identity matrix.
+
+L𝐿L: number of layers;flsuperscript𝑓𝑙f^{l}: feature size in layerl​(1⩽l⩽L)𝑙1𝑙𝐿l~{}(1\leqslant l\leqslant L);
+
+The Aggregate() function and Update() function of GCN are expressed as:
+
+where𝒩​(v)𝒩𝑣\mathcal{N}(v)denotes the neighbor set ofv𝑣vin𝒱l−1superscript𝒱𝑙1\mathcal{V}^{l-1},D​(v)𝐷𝑣D(v)denotes the degree of vertexv𝑣v, and𝒃lsuperscript𝒃𝑙\bm{b}^{l}denotes the bias of the update function.
+
+GraphSAGE: GraphSAGE is proposed in(Hamilton
+et al.,2017)for inductive representation learning on graphs. Starting from a set of target vertex𝒱Tsuperscript𝒱𝑇\mathcal{V}^{T}, GraphSAGE neighbor sampler recursively samples the neighbors to build𝒱1,𝒱2,…,𝒱Lsuperscript𝒱1superscript𝒱2…superscript𝒱𝐿\mathcal{V}^{1},\mathcal{V}^{2},...,\mathcal{V}^{L}. The adjacency matrix𝑨lsuperscript𝑨𝑙\bm{A}^{l}defines the edge connections between𝒱l−1superscript𝒱𝑙1\mathcal{V}^{l-1}and𝒱lsuperscript𝒱𝑙\mathcal{V}^{l}, and each edge has weight equal to one. The Aggregate() function and Update() function of GraphSAGE are expressed as:
+
+Note: In the rest of the paper, we use GCN and GraphSAGE to refer to their GNN-layer operators Aggregate(), Update().
+
+To train a GNN model, the GNN training process consists of five stages(Hamilton
+et al.,2017; Zeng et al.,2020; Chen
+et al.,2018; Chiang
+et al.,2019): sampling, forward propagation, loss calculation, back propagation and weight update. In the sampling stage, a set of vertices and adjacency matrices are sampled from{𝒱l:0⩽l⩽L}conditional-setsuperscript𝒱𝑙0𝑙𝐿\{\mathcal{V}^{l}:0\leqslant l\leqslant L\}and{𝑨l:1⩽l⩽L}conditional-setsuperscript𝑨𝑙1𝑙𝐿\{\bm{A}^{l}:1\leqslant l\leqslant L\}to form a mini-batch. We useℬlsuperscriptℬ𝑙\mathcal{B}^{l}to denote the vertices sampled from𝒱lsuperscript𝒱𝑙\mathcal{V}^{l}in layerl𝑙l.𝑨slsuperscriptsubscript𝑨𝑠𝑙\bm{A}_{s}^{l}denotes the sampled adjacency matrix, which describes inter-layer connections (edges) betweenℬlsuperscriptℬ𝑙\mathcal{B}^{l}andℬl−1superscriptℬ𝑙1\mathcal{B}^{l-1}within the mini-batch. A mini-batch consists of target verticesℬLsuperscriptℬ𝐿\mathcal{B}^{L}, sampled vertices for each layer{ℬl:0⩽l⩽L−1}conditional-setsuperscriptℬ𝑙0𝑙𝐿1\{\mathcal{B}^{l}:0\leqslant l\leqslant L-1\}, and sampled adjacency matrices{𝑨s1:1⩽l⩽L−1}conditional-setsuperscriptsubscript𝑨𝑠11𝑙𝐿1\{\bm{A}_{s}^{1}:1\leqslant l\leqslant L-1\}. In the forward propagation stage, the mini-batch is processed layer by layer. The output embeddings in the last layer{𝒉iL:vi∈ℬL}conditional-setsuperscriptsubscript𝒉𝑖𝐿subscript𝑣𝑖superscriptℬ𝐿\{\bm{h}_{i}^{L}:v_{i}\in\mathcal{B}^{L}\}are compared with the ground truth for loss calculation. The calculated loss will be used as input for back propagation, which performs a similar computation as forward propagation but in the reverse direction. Finally, the gradients of𝑾lsuperscript𝑾𝑙\bm{W}^{l}in each layer are derived and be used to update the weight. We show the steps of GNN training in Algorithm2. In Algorithm2,𝒩s​(v)subscript𝒩𝑠𝑣\mathcal{N}_{s}(v)denotes neighbors ofv𝑣vinℬl−1superscriptℬ𝑙1\mathcal{B}^{l-1}that are specified in𝑨slsuperscriptsubscript𝑨𝑠𝑙\bm{A}_{s}^{l}. A GNN training algorithm is specified by a sampling algorithm (see Section2.3) to construct the mini-batch that consists of{ℬl:0⩽l⩽L−1}conditional-setsuperscriptℬ𝑙0𝑙𝐿1\{\mathcal{B}^{l}:0\leqslant l\leqslant L-1\}and{𝑨s1:1⩽l⩽L−1}conditional-setsuperscriptsubscript𝑨𝑠11𝑙𝐿1\{\bm{A}_{s}^{1}:1\leqslant l\leqslant L-1\}.
+
+In HP-GNN, we exploit data parallelism within each mini-batch by aggregating and updating multiple vertices concurrently (shown in Line 5 of Algorithm2). The computation order within the same mini-batch does not affect the final results. Thus, training in our parallel framework leads to the same result and accuracy as training in serial fashion.
+
+An algorithm to sample a mini-batch is specified by:
+
+A method to sample the verticesℬl​(0⩽l⩽L)superscriptℬ𝑙0𝑙𝐿\mathcal{B}^{l}~{}(0\leqslant l\leqslant L)from𝒱lsuperscript𝒱𝑙\mathcal{V}^{l}.
+
+A method to construct the adjacency matrix𝑨sl​(1⩽l⩽L)superscriptsubscript𝑨𝑠𝑙1𝑙𝐿\bm{A}_{s}^{l}~{}(1\leqslant l\leqslant L)from𝑨lsuperscript𝑨𝑙\bm{A}^{l}.
+
+By sampling the verticesℬl​(0⩽l⩽L)superscriptℬ𝑙0𝑙𝐿\mathcal{B}^{l}~{}(0\leqslant l\leqslant L)and the adjacency matrix𝑨l​(1⩽l⩽L)superscript𝑨𝑙1𝑙𝐿\bm{A}^{l}~{}(1\leqslant l\leqslant L), we construct the mini-batch as the input for each training iteration.
+Various sampling methods(Zeng et al.,2020; Hamilton
+et al.,2017; Chen
+et al.,2018; Ying et al.,2018; Dai
+et al.,2018)are proposed to form a mini-batch from input graphs. These sampling methods(Liu
+et al.,2021)falls into three categories: neighbor sampling, layer-wise sampling and subgraph sampling. We only introduce neighbor sampling and subgraph sampling, since layer-wise sampling(Chen
+et al.,2018)has the similar computation pattern with subgraph sampling(Zeng et al.,2020).
+
+Neighbor Sampling:Neighbor sampling(Hamilton
+et al.,2017; Ying et al.,2018; Chen
+et al.,2017)is a type of sampling strategy that recursively samples the neighbors from the target vertices. To perform neighbor sampling, users specify the size of target vertices|𝒱t|superscript𝒱𝑡|\mathcal{V}^{t}|and the neighbor sample sizeN​Sl𝑁superscript𝑆𝑙NS^{l}for each vertex in layerl𝑙l.
+The sampler first chooses a set of vertices as target vertices𝒱tsuperscript𝒱𝑡\mathcal{V}^{t}. Then, the sampler samplesN​SL𝑁superscript𝑆𝐿NS^{L}neighbors for each vertex in𝒱tsuperscript𝒱𝑡\mathcal{V}^{t}based on a specific probability distribution (e.g., uniform distribution(Hamilton
+et al.,2017)). After the first iteration of neighbor sampling, the set of 1-hop sampled neighborsℬL−1superscriptℬ𝐿1\mathcal{B}^{L-1}is obtained, where|ℬL−1|=|𝒱t|×N​SLsuperscriptℬ𝐿1superscript𝒱𝑡𝑁superscript𝑆𝐿|\mathcal{B}^{L-1}|=|\mathcal{V}^{t}|\times NS^{L}. Similarly, we obtain the 2-hop neighborsℬL−2superscriptℬ𝐿2\mathcal{B}^{L-2}by sampling the neighbors of the 1-hop neighborsℬL−1superscriptℬ𝐿1\mathcal{B}^{L-1}, where|ℬL−2|=|𝒱t|×N​SL×N​SL−1superscriptℬ𝐿2superscript𝒱𝑡𝑁superscript𝑆𝐿𝑁superscript𝑆𝐿1|\mathcal{B}^{L-2}|=|\mathcal{V}^{t}|\times NS^{L}\times NS^{L-1}. By performing neighbor sampling recursively, we obtainL𝐿L-hop neighbors of the target vertices. After obtaining{ℬl:0⩽l⩽L−1}conditional-setsuperscriptℬ𝑙0𝑙𝐿1\{\mathcal{B}^{l}:0\leqslant l\leqslant L-1\},𝑨sl​(1⩽l⩽L)superscriptsubscript𝑨𝑠𝑙1𝑙𝐿\bm{A}_{s}^{l}~{}(1\leqslant l\leqslant L)is constructed by:
+
+Subgraph Sampling:Subgraph sampling(Zeng et al.,2020; Chiang
+et al.,2019)is a strategy to sample a subgraph from the input graph and perform GNN information propagation within the subgraph.
+In the subgraph sampling-based method, users specify sampling budgetS​B𝑆𝐵SBwhich denotes how many vertices to be sampled for the subgraph. Then, the sampler samplesS​B𝑆𝐵SBof vertices or edges based on specific probability, and induce a subgraph based on the sampled vertices or edges. For subgraph sampling, the sampled vertices are identical for each layer, i.e.ℬ0=ℬ1=…=ℬLsuperscriptℬ0superscriptℬ1…superscriptℬ𝐿\mathcal{B}^{0}=\mathcal{B}^{1}=...=\mathcal{B}^{L}. The construction of𝑨sl​(1⩽l⩽L)superscriptsubscript𝑨𝑠𝑙1𝑙𝐿\bm{A}_{s}^{l}~{}(1\leqslant l\leqslant L)is the same as neighbor sampling.
+
+Several software GNN frameworks(Fey and Lenssen,2019; Wang et al.,2019; Zhu et al.,2019; Wang
+et al.,2021)have been proposed in the literature. PyTorch Geometric (PyG)(Fey and Lenssen,2019)is one of the most commonly-used frameworks for GNN deployment that uses PyTorch(Paszke
+et al.,2019)as the backend. PyG users can describe various GNN models using PyG’s message passing API. Deep Graph Library (DGL)(Wang et al.,2019)adopts several parallelization strategies to achieve high performance and memory efficiency for GNN computations. Moreover, DGL offers several major frameworks(Paszke
+et al.,2019; Abadi et al.,2016; Chen et al.,2015)as the backend, allowing users to port their model across frameworks.
+Aligraph(Zhu et al.,2019)supports training on heterogeneous attributed graph (HAG), i.e. graphs that contain different types of vertices and edges.
+These software frameworks share similar features: They are built on existing frameworks(Paszke
+et al.,2019; Abadi et al.,2016; Chen et al.,2015), and abstract away the detailed implementations by providing graph-oriented APIs so that users can describe GNN models easily.
+
+[图片: images\image_2.png]
+图片说明: Figure 2.Framework overview
+
+GraphACT(Zeng and Prasanna,2020)performs sub-graph sampling based GNN training on CPU-FPGA heterogeneous platform. GraphACT exploits both task-level parallelism and data parallelism, and adopts a redundancy reduction technique to reduce the number of on-chip memory accesses. However, GraphACT optimizes the hardware design for inductive GNN models(Hamilton
+et al.,2017)using subgraph sampling, and does not support transductive model, such as GCN . As shown in(Hu et al.,2021), different sampling algorithms perform well in different applications, so there is no one-size-fits-all sampling algorithms.
+Rubik(Chen et al.,2021b)decomposes GNN computations into graph-level and node-level computations, and proposes hierarchical task mapping strategies to exploit data reuse and parallelism in the two computation levels. However, Rubik is an ASIC accelerator that is hard to be optimized for various sampling algorithms.
+DeepBuring-GL(Liang
+et al.,2020)is a FPGA framework to accelerate GNN inference. DeepBuring-GL provides various templates to support different GNN computations and memory access patterns. DeepBuring-GL analyzes the GNN model with the input graph to identify performance bottleneck and choose appropriate hardware templates for kernel implementation to accelerate GNN inference.
+Though frameworks like DeepBuring-GL have been proposed, most of the hardware acceleration works still require significant hardware expertise to make use of them. Moreover, no framework has been proposed to support various mini-batch GNN training on CPU-FPGA platform, which motivates us to conduct this work. In this paper, we build a framework to accelerate GNN training on CPU-FPGA platform. Our framework provides infrastructures to support various GNN models and training algorithms.
+
+We summarize the benefits of using CPU-FPGA platform: while CPU can support various sampling algorithms, FPGA platform allows customizable data path and memory access pattern that can be exploited to optimize the GNN training throughput.
+
+Figure3depicts the mapping of graph data and various kernels onto the CPU-FPGA heterogeneous platform. Sampling is performed on the host CPU because CPU is flexible to support various sampling algorithms; GNN operations including feature aggregation and feature update are performed on the proposed FPGA accelerator.
+Based on this task assignment, the structural information of input graph (𝒱,ℰ𝒱ℰ\mathcal{V},\mathcal{E}) is stored in the host memory for the host CPU to perform sampling. After sampling is done, the structural information of the mini-batch is generated and transferred to the FPGA local memory. The vertex features𝑿𝑿\bm{X}are stored in the FPGA local memory to be directly accessed by the FPGA accelerator, which can reduce the overhead of data movement. The state-of-the-art FPGA boards(Gidel,2021)have up to 260 GB memory; this can support medium size graph.
+
+[图片: images\image_3.png]
+图片说明: Figure 3.System overview
+
+Regarding very large graphs, we store the vertex features in host memory and transfer the vertex features of the mini-batch to the FPGA accelerator after sampling.
+
+Figure2demonstrates the framework overview. The generated design by the framework consists of two major components: (1) a host program that manages CPU-FPGA communication, kernel task scheduling and mini-batch sampling; (2) an accelerator design that runs on the FPGA.
+To generate the mini-batch GNN training implementation on CPU-FPGA platform, our framework takes the user program as the input and generates a high-level abstraction for mini-batch GNN training. In the input program, user specifies the following parameters:
+
+GNN parameters: number of layersL𝐿L; hidden dimension of each layer:fl,(0⩽l⩽L)superscript𝑓𝑙0𝑙𝐿f^{l},(0\leqslant l\leqslant L). The hidden dimensions also define the dimension of weight matrix𝑾l∈ℝfl×fl+1superscript𝑾𝑙superscriptℝsuperscript𝑓𝑙superscript𝑓𝑙1\bm{W}^{l}\in\mathbb{R}^{f^{l}\times f^{l+1}}.
+
+Specify an off-the-shelf GNN model, or provide user-defined functions (UDFs) for scatter( ), gather( ) and update( ) to build custom GNN computation layer.
+
+Sampling algorithm and its parameters. For example, a neighbor sampler for a 2-layer GNN model can be defined asSampler( ’NeighborSampler’, L=2, budgets=[10, 25])through our high-level API described in Section3.3. We provide several off-the-shelf samplers for users to choose from.
+
+The program parser extracts a GNN abstraction from user program, which serves as the intermediate representation for the software generator and hardware generator to generate the implementations on CPU-FPGA platform. The GNN abstraction consists of GNN model configuration (hidden dimensionsflsuperscript𝑓𝑙f^{l}, GNN operators, number of layersL𝐿L) and mini-batch configuration (number of vertices in each layer|ℬl|,(0⩽l⩽L)superscriptℬ𝑙0𝑙𝐿|\mathcal{B}^{l}|,(0\leqslant l\leqslant L)and number of edges in each layer|ℰl|,(1⩽l⩽L)superscriptℰ𝑙1𝑙𝐿|\mathcal{E}^{l}|,(1\leqslant l\leqslant L)). The mini-batch configuration is deduced from the sampling algorithm that implies number of vertices|ℬl|,(0⩽l⩽L)superscriptℬ𝑙0𝑙𝐿|\mathcal{B}^{l}|,(0\leqslant l\leqslant L)in each layer and number of edges|ℰl|,(1⩽l⩽L)superscriptℰ𝑙1𝑙𝐿|\mathcal{E}^{l}|,(1\leqslant l\leqslant L)in each layer.
+
+DSE Engine: the DSE engine takes the GNN abstraction and the platform metadata as input and generates the accelerator configuration that optimizes the GNN training throughput (Section5).
+
+HLS Template/Hardware Template: In the framework, we provide optimized hardware templates written in high-level synthesis (HLS). The key computation operators of the templates (e.g. scatter(), gather()) are obtained from the GNN abstraction. We describe the details of the HLS template design in Section4.
+
+Accelerator generator: Given the generated accelerator configuration and hardware templates, the accelerator generator generates the hardware accelerators for the target FPGA board. The accelerator generator uses the available synthesis tools such as Xilinx Vitis as the backend.
+
+Software generator: Given the input program, the software generator produces a runtime system that runs on the host processor. The runtime system performs the mini-batch sampling, CPU-FPGA communication management, and task scheduling.
+
+API FunctionsDescriptionInit( )Initialization the platform with FPGA bitstreamGNN_Parameters( )Number of layerL𝐿L, feature lengthflsuperscript𝑓𝑙f^{l},Wlsuperscript𝑊𝑙W^{l}andX𝑋XGNN_Computation( )The layer operators in GNN modelSpecify an off-the-shelf GNN model or ”customized”Scatter( )UDF, required if customized layer operator is specifiedGather( )UDF, required if customized layer operator is specifiedUpdate( )UDF, required if customized layer operator is specifiedGNN_Model( )Build GNN model using GNN parameters and computationPlatformParameters( )FPGA Memory bandwidth, Number of DSPs, LUTs, etc.LoadInputGraph( )Specify the input graph.Sampler( )Sampling method with algorithmic parametersDistributeData( )Distribute graph into host memory and FPGA local memoryGenerateDesign( )Generate hardware design and software designStart_training( )Run GNN trainingSave_model( )Save trained GNN modelPrepareEdges( )Prepare graph edge values that is used for training
+
+Table1summarizes our provided high-level APIs for user to program the mini-batch training in Python. Listing1is an example for developing the GNN training using our proposed framework.
+
+In the design phase, user specifies the mini-batch sampler, GNN model and parameters of platform. The framework automatically generates the optimized accelerator design and software design. In the runtime phase, user starts the GNN training on the target CPU-FPGA platform. Using our high-level APIs, a GNN training program only requires a few dozen lines of code.
+
+Use cases: Our framework can serve application developers, who utilize existing GNN models to build GNN applications. Our framework provides off-the-shelf GNN training implementations for some of the commonly-used GNN models (GCN(Kipf and Welling,2017), GraphSAGE(Hamilton
+et al.,2017), GIN(Xu
+et al.,2019)) which can be directly deployed on the CPU-FPGA platform.
+For machine learning (ML) researchers who develop novel GNN models, our framework allows them to customize their own GNN models. For both cases, our framework accelerates GNN training on CPU-FPGA platform without hardware expertise.
+
+[图片: images\image_4.png]
+图片说明: Figure 4.Data layout and Internal Representation
+
+We design hardware templates based on the computation abstraction of the GNN layer described in Section2.1. The hardware templates describe a general architecture of the GNN layer as in Figure5and Figure6. Then, the accelerator generator takes user-defined functions as input and integrates them into the hardware templates to generate the accelerator design.
+
+Aggregating feature vector from neighbors incurs irregular memory access and large memory traffic. Figure4presents the data layout and internal representation used in our framework to reduce the memory traffic as well as the number of random memory accesses. The data layout is produced by the sampler throughrenamingandsorting.
+
+Reducing Memory Traffic (RMT): During aggregation stage, the feature vector of the source vertex is sent to its destination for aggregation.
+For the first layer of aggregation, the input feature matrix𝑿𝑿\bm{X}is stored in the memory. Thus, loading feature vectors incurs a large number of random memory accesses.
+Since the edges are represented in coordinate (COO) format sorted by source vertices in our framework, edges that share the same source vertex can reuse the feature vector that has been loaded, and thus reduce memory traffic. The total number of memory traffic can be reduced fromO​(|ℰ1|​f0)𝑂subscriptℰ1superscript𝑓0O(|\mathcal{E}_{1}|f^{0})toO​(|ℬ0|​f0)𝑂subscriptℬ0superscript𝑓0O(|\mathcal{B}_{0}|f^{0}), where|ℰ1|subscriptℰ1|\mathcal{E}_{1}|is usually larger than|ℬ0|subscriptℬ0|\mathcal{B}_{0}|. Fig4depicts an example: ¡v1,v2subscript𝑣1subscript𝑣2v_{1},v_{2}¿ loads the feature vector ofv1subscript𝑣1v_{1}from memory, and the loaded feature vector ofv1subscript𝑣1v_{1}can be reused by (v1,v7subscript𝑣1subscript𝑣7v_{1},v_{7}).
+
+Reducing Random Access (RRA):
+Since the edges are sorted by the source index in the first layer, the destination vertex index of the edges are in a random order; thus, the hidden features are stored randomly as shown in the layer 1 and layer 2 of Figure4. To reduce random access, our framework performs vertex renaming, which labels the vertices based on the order they are stored, this step also renames the vertices in each edge. Next, we sort the renamed edges by source vertices, and then accessing hidden features become sequential since the source vertex number follows the order it is stored.
+
+[图片: images\image_5.png]
+图片说明: Figure 5.Architecture of aggregate kernel
+
+Aggregate Kernel: The aggregate kernel adopts the scatter-gather paradigm(Chen
+et al.,2021a)as illustrated in Algorithm3.
+Figure5depicts the detailed architecture of the aggregate kernel.
+Multiple processing elements (PEs) process multiple edges concurrently in each clock cycle.
+The vertex feature vectors are first streamed to a feature duplicator. The feature duplicator broadcasts the loaded feature vector to all the Scatter PEs. The feature vector is stored in the PEs’ registers for data reuse. Then, Scatter PEs perform user-defined scatter() function, and stream the updateu𝑢uto its destination via the routing network. The routing network is implemented as a butterfly network(Choi
+et al.,2021). After the Gather PEs receive the updates, Gather PEs perform user-defined gather function and obtain the intermediate results. The intermediate results are stored on-chip. Finally, when the aggregation is done, the results stored in the on-chip memory are written back to the FPGA local memory. Since the gather phase may incur reading and writing to the same destination vertices, read-after-write (RAW) data hazard may occur.
+The RAW Resolver addresses RAW data hazard by stalling.
+
+Update Kernel: The update kernel is a systolic array based design that performs block matrix multiplication. The input buffer loads the aggregation results𝒂lsuperscript𝒂𝑙\bm{a}^{l}(see Algorithm2) from the FPGA local memory.𝒂lsuperscript𝒂𝑙\bm{a}^{l}will then be streamed into the MAC array. Each MAC module is followed by an element-wise operatorσ𝜎\sigma. Typically, weight of each layer𝑾lsuperscript𝑾𝑙\bm{W}^{l}in GCN is small and frequently reused. Thus,𝑾lsuperscript𝑾𝑙\bm{W}^{l}are stored on-chip in the Weight-Buffer.𝑾lsuperscript𝑾𝑙\bm{W}^{l}will be broadcast to the multiply-accumulate (MAC) array during feature update. Finally, the result is stored into a result buffer before written back to the FPGA local memory.
+
+[图片: images\image_6.png]
+图片说明: Figure 6.Architecture of update kernel
+
+[图片: images\image_7.png]
+图片说明: Figure 7.Architecture of the FPGA accelerator.
+
+Many modern FPGAs consists of multiple dies and number of interconnection wires across the dies is limited. Therefore, we implement multiple copy of the kernels that is distributed into multiple dies as shown in Figure7. Multiple dies and multiple DDR channels are connected through an all-to-all interconnection which is generated by vendor tool, such as Xilinx Vitis. The input feature matrix𝑿𝑿\bm{X}is equally partitioned into DDR channels. To utilize the multiple computation kernels for a single mini-batch, we perform task partitioning for the mini-batch training. In the forward propagation phase of layer 1, to infer the vertices inℬ1={v1,v2,v3,….,v|ℬ1|}\mathcal{B}^{1}=\{{v_{1},v_{2},v_{3},....,v_{|\mathcal{B}^{1}|}}\}. The workload for inferringℬ1superscriptℬ1\mathcal{B}^{1}are equally partitioned into multiple kernels. Suppose there is444aggregate kernels and444corresponding update kernels. Aggregate kernel 1 aggregates{v1,v2,…,v|ℬ1|4}subscript𝑣1subscript𝑣2…subscript𝑣superscriptℬ14\{{v_{1},v_{2},...,v_{\frac{|\mathcal{B}^{1}|}{4}}}\}. Update kernel 1 updates{v1,v2,…,v|ℬ1|4}subscript𝑣1subscript𝑣2…subscript𝑣superscriptℬ14\{{v_{1},v_{2},...,v_{\frac{|\mathcal{B}^{1}|}{4}}}\}and write the results back to DDR. Similarly, aggregate kernel 2 aggregates{v|ℬ1|4+1,v|ℬ1|4+2,…,v|ℬ1|2}subscript𝑣superscriptℬ141subscript𝑣superscriptℬ142…subscript𝑣superscriptℬ12\{{{v_{\frac{|\mathcal{B}^{1}|}{4}}+1},{v_{\frac{|\mathcal{B}^{1}|}{4}}+2},...,v_{\frac{|\mathcal{B}^{1}|}{2}}}\}, and so on and so forth. The same partitioning scheme is applied to each layer.
+
+Our framework provides a design space exploration (DSE) engine for optimizing the GNN training throughput, given the configuration of mini-batch ({|ℬl|:0⩽l⩽L}:superscriptℬ𝑙0𝑙𝐿\{|\mathcal{B}^{l}|:0\leqslant l\leqslant L\},{|ℰl|:1⩽l⩽L}:superscriptℰ𝑙1𝑙𝐿\{|\mathcal{E}^{l}|:1\leqslant l\leqslant L\}), GNN hidden dimensions{fl:0⩽l⩽L}conditional-setsuperscript𝑓𝑙0𝑙𝐿\{f^{l}:0\leqslant l\leqslant L\}, memory bandwidthα𝛼\alpha, and hardware resources per die (DSPs, BRAMs, URAMs). To drive the optimization, we develop a performance model (Section5.1) that models the training throughput on the CPU-FPGA platform, and the resource utilization model (Section5.2) that is used to specify the resource constraints. Then, our DSE engine (Algorithm4) performs parameter sweep in the design space to identify the hardware design parameters that optimizes the training throughput.
+
+We define the throughput of mini-batch GNN training as Number of Vertices Traversed Per Second (NVTPS):
+
+The numerator indicates the total amount of vertices traversed in one mini-batch, and the denominatortexecutionsubscript𝑡executiont_{\text{execution}}is the average execution time of one training iteration (see Algorithm2). The modeling of the average execution time is based on the our task scheduling on the CPU-FPGA platform.
+
+We overlap sampling stage of the next batch with the execution of the current batch, so average execution timetexecutionsubscript𝑡executiont_{\text{execution}}is estimated as:
+
+wheretGNNsubscript𝑡GNNt_{\text{\text{GNN}}}consists of the execution time of forward propagationtFPsubscript𝑡FPt_{\text{FP}}, loss calculationtLCsubscript𝑡LCt_{\text{LC}}, back propagationtBPsubscript𝑡BPt_{\text{BP}}and weight updatetWUsubscript𝑡WUt_{\text{WU}}.
+
+ModelingtGNNsubscript𝑡GNNt_{\text{GNN}}: Loss calculation and weight update are executed on the host processor, which have optimized implementation in the software library.
+Forward propagation and backward propagation are executed on the FPGA platform, and their execution time depends on the hardware parameters and the mini-batch configuration ({|ℬl|:0⩽l⩽L}:superscriptℬ𝑙0𝑙𝐿\{|\mathcal{B}^{l}|:0\leqslant l\leqslant L\},{|ℰl|:1⩽l⩽L}:superscriptℰ𝑙1𝑙𝐿\{|\mathcal{E}^{l}|:1\leqslant l\leqslant L\}). We drive the approximate execution time of two propagation stages as:
+
+The total propagation timetFPsubscript𝑡FPt_{\text{FP}}ortBPsubscript𝑡BPt_{\text{BP}}is the sum of the execution time of each layer, and the execution time of each layer is decided by the task that takes longer to complete since aggregation stage and update stage are pipelined.
+
+The aggregation stage consists of two tasks: (1) loading vertex features or gradients, and (2) computation. Since the two tasks are pipelined,taggregatesubscript𝑡aggregatet_{\text{aggregate}}can be modeled as:
+
+We model the vertex feature loading timetloadlsuperscriptsubscript𝑡load𝑙t_{\text{load}}^{l}asdata transferredeffective bandwidthdata transferredeffective bandwidth\frac{\text{data transferred}}{\text{effective bandwidth}}.|ℬl|superscriptℬ𝑙|\mathcal{B}^{l}|indicates the number of vertices in each layer,flsuperscript𝑓𝑙f^{l}is the feature length, andSfeatsubscript𝑆featS_{\text{feat}}is the data size of each feature.α𝛼\alphais the effective bandwidth ratio. For the feature loading of the first layer of neighbor sampling method,α𝛼\alphais estimated based on the memory burst transaction lengthSfeatsubscript𝑆featS_{\text{feat}}(Lu
+et al.,2021)(for DDR4) because it incurs random memory access; for the rest of the layers,α𝛼\alphais near to111(Lu
+et al.,2021)since the memory accesses are sequential from DDR memory or on-chip memory (Section4.1). The value ofα𝛼\alphais obtained from the prior work(Lu
+et al.,2021)which performs a profiling for the characteristics of the FPGA DDR memory. We model the compute time as (# of operations)/(# of PEs×\timeskernel frequency).n𝑛ndenotes the there aren𝑛nScatter PEs andn𝑛nGather PEs instantiated in the aggregation kernel.|ℰl|superscriptℰ𝑙|\mathcal{E}^{l}|is the number of edges (i.e. non-zeros) in each layer. The size of|ℰl|superscriptℰ𝑙|\mathcal{E}^{l}|depends on the sampling method. We show the modeling ofℰlsuperscriptℰ𝑙\mathcal{E}^{l}for various sampling methods in Table2.
+
+Method# of Vertices|ℬl|superscriptℬ𝑙|\mathcal{B}^{l}|# of edges|ℰl|superscriptℰ𝑙|\mathcal{E}^{l}|Neighbor|𝒱t|×Πi=l+1L​N​Sisuperscript𝒱𝑡superscriptsubscriptΠ𝑖𝑙1𝐿𝑁superscript𝑆𝑖|\mathcal{V}^{t}|\times\Pi_{i=l+1}^{L}NS^{i}|𝒱t|×Πi=lL​N​Sisuperscript𝒱𝑡superscriptsubscriptΠ𝑖𝑙𝐿𝑁superscript𝑆𝑖|\mathcal{V}^{t}|\times\Pi_{i=l}^{L}NS^{i}Layer-wiseSlsuperscript𝑆𝑙{S}^{l}Sl×Sl−1×κ​(Sl)superscript𝑆𝑙superscript𝑆𝑙1𝜅superscript𝑆𝑙{S}^{l}\times{S}^{l-1}\times\kappa({S}^{l})Subgraph‡S​B𝑆𝐵SBS​B×κ​(S​B)𝑆𝐵𝜅𝑆𝐵SB\times\kappa(SB)
+
+Uses node sampler in(Zeng et al.,2020)as an example
+
+For neighbor sampling, the number of edges|ℰl|superscriptℰ𝑙|\mathcal{E}^{l}|in each layer is decided by the size of target vertices|𝒱t|superscript𝒱𝑡|\mathcal{V}^{t}|and sample sizeN​Sl𝑁superscript𝑆𝑙NS^{l}. For layer-wise and subgraph sampling, we formulate the number of edges in layer|ℰl|superscriptℰ𝑙|\mathcal{E}^{l}|as|ℬl|×|ℬl−1|×κ​(|ℬl|)superscriptℬ𝑙superscriptℬ𝑙1𝜅superscriptℬ𝑙|\mathcal{B}^{l}|\times|\mathcal{B}^{l-1}|\times\kappa(|\mathcal{B}^{l}|)where|ℬl|×|ℬl−1|superscriptℬ𝑙superscriptℬ𝑙1|\mathcal{B}^{l}|\times|\mathcal{B}^{l-1}|corresponds to the case all the sampled vertices in layerl𝑙landl−1𝑙1l-1are connected, andκ​(|ℬl|)𝜅superscriptℬ𝑙\kappa(|\mathcal{B}^{l}|)is a pre-trained function that estimates the graph sparsity based on sample size|ℬl|superscriptℬ𝑙|\mathcal{B}^{l}|.
+
+The feature update can be modelled as
+
+Similar totcomputesubscript𝑡computet_{\text{compute}}, we model thetupdatesubscript𝑡updatet_{\text{update}}as (# of operations)/(# of PEs×\timeskernel frequency). The numerator is the complexity of matrix multiplication, andm𝑚mdenotes how many parallel MACs are instantiated in the update kernel.
+
+Modelingtsamplingsubscript𝑡samplingt_{\text{sampling}}: the mini-batch sampling is performed on the host processor, which can potentially be a performance bottleneck. We exploit multi-threading to sample multiple mini-batches concurrently. In the design phase, we estimatetsamplingsubscript𝑡samplingt_{\text{sampling}}under various number of threads and determine the minimum number of threads that satisfiestsampling<tGNNsubscript𝑡samplingsubscript𝑡GNNt_{\text{sampling}}<t_{\text{GNN}}.
+
+We set the hardware constraints to form the solution space for our DSE Engine. Among the various hardware resources on the FPGA platform, DSPs and LUTs are used the most as we increase the parallelism of the hardware modules. Thus, we model the usage of LUTs and DSPs as our constraints:
+
+The coefficientsλi​(1⩽i⩽2)subscript𝜆𝑖1𝑖2\lambda_{i}~{}(1\leqslant i\leqslant 2)andρi​(1⩽i⩽3)subscript𝜌𝑖1𝑖3\rho_{i}~{}(1\leqslant i\leqslant 3)are constants that indicate the resource consumption for each PE. In the case of DSPs, the utilization grows linearly as we instantiate more PEs; In the case of LUTs, an additionaln​log⁡(n)𝑛𝑛n\log(n)(see Section4.2for the definition ofn𝑛n) term is introduced. Then​log⁡(n)𝑛𝑛n\log(n)LUT overhead models the routing network in the aggregation kernel shown in Figure5.NDSPsubscript𝑁DSP{N}_{\text{DSP}}andNLUTsubscript𝑁LUT{N}_{\text{LUT}}denote the available DSPs and LUTs on the FPGA platform.
+
+Many modern FPGAs consists of multiple dies(Chen
+et al.,2019), and the available resources may vary across dies. Thus, we perform DSE for each die to explore the optimal hardware configuration. We assume that each die is connected to one DDR channel (e.g. Xilinx Alveo U250) for simplicity in Algorithm4;
+The DSE engine first constructs the search space by deriving the maximum value ofn𝑛nandm𝑚mseparately based on Equations (10) and (11). Then, the engine performs an exhaustive search through all the possible configurations. For each configuration, the engine evaluates its throughput using Equation4, and chooses the optimal design.
+
+We use our framework to generate GNN training implementations on a CPU-FPGA heterogeneous platform, and compare the training throughput with CPU-only platform and CPU-GPU platform. We list the information of each platform in Table3. The CPU-only and CPU-GPU baseline are implemented using PyTorch-Geometric(Fey and Lenssen,2019)111https://github.com/pyg-team/pytorch_geometric/blob/master/examples/reddit.pyand GraphSAINT(Zeng et al.,2020)222https://github.com/GraphSAINT/GraphSAINT.
+
+PlatformsCPUAMD Ryzen 3990xGPUNvidia A100FPGAXilinx Alveo U250TechnologyTSMC 7 nmTSMC 7 nmTSMC 16 nmFrequency2.90 GHz1410 MHz300 MHzPeak Performance3.7 TFLOPS19.5 TFLOPS0.6 TFLOPSOn-chip Memory256 MB L3 cache40 MB L2 Cache54 MBMemory Bandwidth107 GB/s1555 GB/s77 GB/s
+
+Samplers, Models and Datasets:
+We generate mini-batch for GNN training using two sampling algorithms: (1) GraphSAGE neighbor sampler(Hamilton
+et al.,2017)for neighbor sampling (NS) and (2) GraphSAINT node sampler(Zeng et al.,2020)for subgraph sampling (SS). For GraphSAGE neighbor sampler, we set the size of target vertices|𝒱t|superscript𝒱𝑡|\mathcal{V}^{t}|as 1024, neighbor sampling sizeN​S𝑁𝑆NSas 25 and 10 for 1-hop neighbors and 2-hop neighbors; for GraphSAINT-node sampler, we set the sampling budgetS​B𝑆𝐵SBas 2750. We measure the GNN training throughput of two-layer GCN model and two-layer GraphSAGE model on four medium-scale graph datasets (Flickr(Zeng et al.,2020), Reddit(Hamilton
+et al.,2017), Yelp(Zeng et al.,2020)and AmazonProducts(Zeng et al.,2020)) that fit in the FPGA local DDR memory. Details of the datasets and the GNN-layer dimensions are shown in Table4.
+
+Dataset#Nodes#Edgesf0f1​f2subscript𝑓0subscript𝑓1subscript𝑓2f_{0}\hskip 11.38092ptf_{1}\hskip 6.544pt\hskip 0.85355ptf_{2}Flickr (FL)89250899756500​256​75002567500\hskip 5.69046pt256\hskip 7.11317pt7Reddit (RD)23296511606919602​256​4160225641\hskip 1.42271pt602\hskip 5.69046pt256\hskip 5.69046pt41Yelp (YP)7168476977410300​256​100300256100300\hskip 5.69046pt256\hskip 4.26773pt100AmazonProducts (AP)1598960132169734200​256​107200256107200\hskip 5.69046pt256\hskip 4.26773pt107
+
+We implement the program parser, DSE engine, software and hardware generator in our framework using Python, and the accelerator templates are implemented using Xilinx HLS. The host program template is programmed in OpenCL. Users interface with our framework using our APIs programmed in Python. To serve application developers, our framework includes several commonly used GNN models that can be used off-the-shelf. For ML researchers, our APIs allow users to define new models. In Listing2, we provide some examples of user inputs to specify platforms, mini-batch samplers and GNN models via our APIs. Based on the given inputs, our framework generates the host program and synthesizable accelerator design. For example, based on the GNN model specified by the user, user decides the parameters in the host program template, and what aggregation function should be filled in the HLS template to generate the accelerator design. Based on the platform parameters, our DSE engine fills in the hardware configurations such as the unroll factor in our HLS template. In Listing3, we provide an example that shows part of generated host program and synthesizable accelerator design.
+
+ResourcesNS-GCNNS-GraphSAGESS-GCNSS-GraphSAGELUTs50%54%44%76%DSPs70%54%70%82%URAM34%34%14%20%BRAM28%28%30%34%(m,n)(256,4)(256,4)(256,4)(256,8)
+
+In Table5we show the resource utilization of the implementations generated by our design. The numbern𝑛nwhich dentoes the number of Scatter PEs and Gather PEs are restricted to power of 2, and number of MACsm𝑚mis restricted to square of power of 2 due to the design of our accelerator.
+
+We evaluate the two optimizations of our data layout and internal representation described in Section4.1on a two-layer neighbor sampling GCN. The two optimizations are: (1) reducing memory traffic (RMT) by reusing loaded vertex features in different edges that share the same source vertex; (2) reducing random access (RRA) by vertex renaming followed by edge sorting. We first measure the throughput of the baseline implementation with no optimizations, and then incrementally apply the two optimizations. As shown in Table6, both optimizations increase the GNN training throughput and can deliver up to 57% improvement in total.
+
+Throughput (NVTPS)FLRDYPAPBaseline10.45 M12.98 M19.71 M23.17 MRMT11.98 M16.48 M22.39 M27.22 MRMT+RRA16.38 M18.50 M24.60 M29.27 MImprovement57%43%25%26%
+
+DataCPUCPU-GPUCPU-FPGANS-GCNFL265.5K (1×\times)2.69M (10.1×\times)16.38M (61.7×\times)RD85.65K (1×\times)7.15M (83.5×\times)18.50M (216×\times)YP275.6K (1×\times)9.36M (34.0×\times)24.61M (89.2×\times)AM480.6K (1×\times)13.0M (29.0×\times)29.26M (60.8×\times)NS-SAGEFL225.2K (1×\times)2.74M (12.2×\times)11.84M (52.6×\times)RD78.50K (1×\times)6.90M (88.0×\times)13.10M (166×\times)YP266.0K (1×\times)9.19M (34.5×\times)18.12M (68.1×\times)AM479.3K (1×\times)13.57M (28.3×\times)21.15M (44.1×\times)SS-GCNFL215.2K (1×\times)768.3K (3.59×\times)2.81M (13.0×\times)RD118.9K (1×\times)536.4K (4.51×\times)2.56M (21.5×\times)YP159.1K (1×\times)751.0K (4.71×\times)3.08M (19.4×\times)AM25.55K (1×\times)OoM1.47M (57.5×\times)SS-SAGEFL179.9K (1×\times)626.7K (3.48×\times)2.71M (15.1×\times)RD94.72K (1×\times)505.2K (5.33×\times)2.43M (25.6×\times)YP126.7K (1×\times)709.7K (5.60×\times)2.78M (22.0×\times)AM17.40K (1×\times)OoM1.45M (83.3×\times)Average193.4K (1×\times)4.96M (25.66×\times)10.77M (55.67×\times)
+
+For evaluation, we use the throughput defined in Section5as metric, i.e. number of vertices traversed per second (NVTPS).
+To measure the throughput, we count the total number of vertices in each mini-batch, and measure the average execution time of one training iteration. Table7shows the throughput comparison of GNN training across the three platforms. All three implementations use single precision floating point as data type.
+
+Comparing with the CPU-only baseline, the CPU-GPU platform achieves25.66×25.66\timesthroughput on the average. This is because CPU-GPU platform provides massive data parallelism with5.27×5.27\timespeak performance and14.5×14.5\timesmemory bandwidth compared with the CPU-only platform (Table3).
+Comparing with the CPU-only baseline and CPU-GPU baseline, the CPU-FPGA implementation generated by our framework achieves55.67×55.67\timesand2.17×2.17\timesthroughput on the average respectively. Though CPU-GPU platform has higher memory bandwidth and peak performance than CPU-FPGA platform, the throughput is limited by the memory access overhead during aggregation stage. While our accelerator can access the on-chip memory in one cycle (3.3 ns), CPU and GPU need to access the data in multi-level caches. Taking AMD Ryzen 3990 as an example, the L2 cache latency is 5 to 12 ns, and the L3 cache latency is around 32 ns.
+Moreover, as shown in Table6, our data layout and internal representation also improves the training throughput by reducing the memory traffic and reducing random memory accesses.
+
+We compare our results with two state-of-the-art GNN training implementations: GraphACT(Zeng and Prasanna,2020)and Rubik(Chen et al.,2021b). As shown in Table8, our framework achieves up to4.45×4.45\timesand3.4×3.4\timesthroughput respectively. Compared with GraphACT, the achieved speedup is due to (1) the vertex features are fetched directly from the FPGA local memory, (2) the proposed aggregate kernal has higher computation parallelism compared with Feature Aggregation Module in GraphACT. Compared with ASIC design Rubik, the obtained speedup is due to (1) larger on-chip memory of FPGA that can fully store the intermediate results under the setting of the experiments, (2) our proposed data layout optimizations that reduce the external memory traffic and random memory accesses.
+
+GraphACT(Zeng and Prasanna,2020)‡‡\ddaggerRubik(Chen et al.,2021b)This workPlatformDeviceAlveo U250ASICAlveo U250Peak Perf.0.6 TFLOPS1 TFLOPS0.6 TFLOPSBandwidth77 GB/s432 GB/s77 GB/sOn-chip Mem.54 MB2 MB54 MBSS-SAGE(Throughput)RD546.8K (1×\times)717.0K (1.31×\times)2.43M (4.45×\times)YP769.8K (1×\times)N/A2.78M (3.61×\times)
+
+Scaled from U200 to U250 using the number of DSPs.
+
+We discuss the novelty of this work compared with previous work GraphACT(Zeng and Prasanna,2020)and the applicability of proposed optimizations to other platforms (e.g., CPU, GPU).
+
+Comparison with GraphACT. In GraphACT(Zeng and Prasanna,2020), the redundancy reduction requires that all the edges have uniform weight value. Therefore, it can not support GCN(Kipf and Welling,2017). In constrast, the proposed optimizations such as RMT and RRA do not have requirements on the weight, therefore, can support broader range of GNN models. Moreover, the Feature Aggregation Module in GraphACT has limited computation parallelism in feature-level that limits its performance for neighbor-sampling-based GNN training. In comparison, the proposed aggregate kernel adopts the scatter-gather paradigm with routing network, which can enable massive computation parallelism within feature aggregation.
+
+Optimizations on CPU/GPU platforms. In this work, we proposed a highly optimized aggregate kernel that adopts the scatter-gather paradigm to accelerate feature aggregation. While the scatter phase is optimized by our proposed data layout optimizaiton (Section4.1), the performance of gather phase depends on the routing network of aggregate kernel (Section4.2) that efficiently routes the intermediate result from Scatter PEs to Gather PEs. On CPU/GPU platforms, the data layout optimization can potentially be adopted to optimize the scatter phase. However, the gather phase is hard to be optimized on CPU/GPU since the data communication among the computation cores is through a complex cache hierarchy. Since the scatter phase and gather phase need be optimized simultaneously, the proposed optimizations may lead to limited performance improvement on CPU/GPU platforms.
+
+In this paper, we proposed HP-GNN, a general framework to generate high-throughput GNN training implementation on a given CPU-FPGA heterogeneous platform. Based on the high-level abstraction of GNN computation, we designed a host program template and hardware templates to support various GNN models. Our proposed data layout and internal representation improve the throughput of GNN training. The implementations generated by HP-GNN achieve55.67×55.67\timesand2.17×2.17\timesthroughput compared with state-of-the-art CPU-only and CPU-GPU platforms. Compared with state-of-art accelerators, our framework achieves up to4.45×4.45\timesthroughput. In the future, we plan to extend our framework to multi-FPGA platforms by exploiting model parallelism.
+
+[图片: images\image_8.png]
+
+[图片: images\image_9.png]
+

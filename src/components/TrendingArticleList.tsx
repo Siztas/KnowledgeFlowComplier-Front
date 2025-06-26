@@ -1,10 +1,14 @@
 "use client";
 
-import { Box, Text, Flex, Heading, Spinner, Badge, Image, useColorModeValue } from "@chakra-ui/react";
+import { Box, Text, Flex, Heading, Spinner, Badge, Image, useColorModeValue, Stack, IconButton, Tooltip } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useTrendingStore } from "@/store/trendingStore";
 import { useArticleStore } from "@/store/articleStore";
 import { useEffect } from "react";
+import { processImagePath } from "@/utils/imagePathProcessor";
+import LocalImage from "./LocalImage";
+import { DeleteIcon } from "@chakra-ui/icons";
+import EnhancedImage from "./EnhancedImage";
 
 const MotionBox = motion(Box);
 
@@ -130,14 +134,13 @@ const TrendingArticleList = () => {
             {/* 文章图片 */}
             {article.imageUrl && (
               <Box ml={2} width="40px" height="40px" flexShrink={0}>
-                <Image 
+                <EnhancedImage 
                   src={article.imageUrl} 
                   alt={article.title}
+                  displayMode="thumbnail"
                   width="100%"
                   height="100%"
-                  objectFit="cover"
                   borderRadius="md"
-                  fallbackSrc="https://via.placeholder.com/40"
                 />
               </Box>
             )}

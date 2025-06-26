@@ -7,6 +7,55 @@ import { useEffect, useCallback } from "react";
 // @ts-ignore
 import { Chrono } from "react-chrono";
 
+// 添加全局样式覆盖
+const globalStyles = `
+  /* 时间轴卡片文字内容强制设置为白色 */
+  .timeline-card-content, 
+  .timeline-card-content *, 
+  .timeline-item-title,
+  .card-title, 
+  .card-subtitle, 
+  .card-description,
+  .card-text,
+  .card-text > span,
+  .card-text > p,
+  .card-text > div,
+  .timeline-horz-card-wrapper .card-text,
+  .timeline-card-content .content-text,
+  .card-description p {
+    color: white !important;
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.5) !important;
+  }
+  
+  /* 确保卡片背景色足够深 */
+  .timeline-card {
+    background-color: #1a1a1a !important;
+  }
+  
+  /* 增强文字可见性 */
+  .timeline-card-content h1,
+  .timeline-card-content h2,
+  .timeline-card-content h3,
+  .timeline-card-content h4,
+  .timeline-card-content h5,
+  .timeline-card-content h6 {
+    color: white !important;
+    font-weight: bold !important;
+  }
+
+  /* 图像容器设置白色背景 */
+  .timeline-card-content .media-container,
+  .timeline-card-content .card-media,
+  .timeline-card-content .card-media-wrapper,
+  .timeline-card .media-wrapper,
+  .timeline-card img,
+  .timeline-card .media {
+    background-color: white !important;
+    padding: 4px !important;
+    border-radius: 4px !important;
+  }
+`;
+
 const TrendingTimeline = () => {
   const { 
     trendingArticles, 
@@ -90,6 +139,9 @@ const TrendingTimeline = () => {
   
   return (
     <Box width="100%" height="100%" px={0} overflow="hidden">
+      {/* 添加全局样式 */}
+      <style>{globalStyles}</style>
+      
       <Heading size="md" mb={6} textAlign="center">
         热门研究时间线
       </Heading>
@@ -106,6 +158,9 @@ const TrendingTimeline = () => {
             cardForeColor: "white",
             titleColor: "white",
             titleColorActive: "#3182CE",
+            cardTitleColor: "white",
+            cardSubtitleColor: "white",
+            cardDetailedTextColor: "white",
           }}
           onItemSelected={handleArticleClick}
           scrollable={{ scrollbar: true }}

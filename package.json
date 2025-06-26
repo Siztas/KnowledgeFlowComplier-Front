@@ -6,7 +6,11 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "mocha",
+    "test:integration": "mocha test/integration/**/*.test.ts",
+    "test:watch": "mocha --watch",
+    "test:coverage": "nyc mocha"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
@@ -25,15 +29,29 @@
     "react-dom": "^19.0.0",
     "react-force-graph": "^1.47.6",
     "react-icons": "^5.5.0",
+    "react-markdown": "^10.1.0",
+    "rehype-katex": "^7.0.1",
+    "rehype-raw": "^7.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
     "zustand": "^5.0.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/chai": "^5.2.2",
+    "@types/jsdom": "^21.1.7",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^20",
+    "@types/node-fetch": "^2.6.12",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "chai": "^5.2.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
+    "jsdom": "^26.1.0",
+    "mocha": "^11.7.0",
+    "node-fetch": "^3.3.2",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }
