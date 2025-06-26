@@ -322,37 +322,6 @@ npm run build
 npx tsc --noEmit
 ```
 
-## 📞 支持与贡献
-
-### 贡献指南
-
-欢迎贡献代码或提出建议！请遵循以下步骤：
-
-1. Fork仓库
-2. 创建功能分支 (`git checkout -b feature/amazing-feature`)
-3. 提交更改 (`git commit -m 'Add some amazing feature'`)
-4. 推送到分支 (`git push origin feature/amazing-feature`)
-5. 创建Pull Request
-
-## 📄 许可证
-
-MIT License - 详见 [LICENSE](LICENSE) 文件
-
----
-
-## 🚀 快速部署命令
-
-```bash
-# Vercel 一键部署
-npm run deploy:vercel
-
-# 构建生产版本
-npm run build
-
-# 预览生产版本
-npm run start
-```
-
 **🎉 享受你的 KnowledgeFlowCompiler 之旅！**
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
